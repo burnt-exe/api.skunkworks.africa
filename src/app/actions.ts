@@ -1,6 +1,7 @@
 'use server';
 
 import { suggestItems, type SuggestItemsInput } from '@/ai/flows/suggest-items';
+import { generateLandingPageImage, type GenerateLandingPageImageInput } from '@/ai/flows/generate-landing-page-image';
 
 export async function suggestItemsAction(input: SuggestItemsInput) {
   try {
@@ -11,4 +12,15 @@ export async function suggestItemsAction(input: SuggestItemsInput) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     return { success: false, error: `Failed to get suggestions: ${errorMessage}` };
   }
+}
+
+export async function generateLandingPageImageAction(input: GenerateLandingPageImageInput) {
+    try {
+        const result = await generateLandingPageImage(input);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+        return { success: false, error: `Failed to generate image: ${errorMessage}` };
+    }
 }
