@@ -15,27 +15,26 @@ import { suggestItemsAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Sparkles, Trash2, LoaderCircle, Printer, Download } from 'lucide-react';
 
-export default function InvoicePage() {
+export default function PurchaseOrderPage() {
   const [data, setData] = useState<DocumentData>({
-    title: 'INVOICE',
+    title: 'PURCHASE ORDER',
     logoUrl: '',
     from: { name: 'Your Company', address: '123 Main St, Anytown, USA' },
-    to: { name: 'Client Company', address: '456 Oak Ave, Otherville, USA' },
+    to: { name: 'Supplier Inc.', address: '1 supply Rd, Factoryville, USA' },
     details: {
-      label: 'Invoice No.',
-      value: `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+      label: 'PO No.',
+      value: `PO-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
     },
     date: new Date().toISOString().split('T')[0],
-    dueDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0],
     lineItems: [
-      { description: 'Item 1', quantity: 2, price: 50.0 },
-      { description: 'Item 2', quantity: 1, price: 150.0 },
+      { description: 'Raw Material A', quantity: 100, price: 10.0 },
+      { description: 'Component B', quantity: 50, price: 25.0 },
     ],
-    notes: 'Thank you for your business.',
+    notes: 'Please deliver by EOD Friday.',
     vatRate: 20,
   });
 
-  const [aiState, setAiState] = useState({ businessType: 'Consulting', vatRate: '20' });
+  const [aiState, setAiState] = useState({ businessType: 'Manufacturing', vatRate: '20' });
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
@@ -98,8 +97,8 @@ export default function InvoicePage() {
     <div className="grid h-full min-h-[calc(100vh-4rem)] grid-cols-1 gap-8 lg:grid-cols-2">
       <ScrollArea className="h-full max-h-[calc(100vh-4rem)] rounded-lg border bg-card shadow-sm">
         <div className="p-6">
-          <h1 className="text-2xl font-bold">Invoice Details</h1>
-          <p className="text-muted-foreground">Fill in the details to generate your invoice.</p>
+          <h1 className="text-2xl font-bold">Purchase Order Details</h1>
+          <p className="text-muted-foreground">Fill in the details to generate your PO.</p>
           <Separator className="my-6" />
           <div className="space-y-6">
             <Card>
@@ -139,7 +138,7 @@ export default function InvoicePage() {
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="from.name">From</Label>
+                <Label htmlFor="from.name">From (Your Company)</Label>
                 <Input
                   id="from.name"
                   name="from.name"
@@ -155,17 +154,17 @@ export default function InvoicePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="to.name">To</Label>
+                <Label htmlFor="to.name">To (Supplier)</Label>
                 <Input
                   id="to.name"
                   name="to.name"
-                  placeholder="Client's Company"
+                  placeholder="Supplier's Company"
                   value={data.to.name}
                   onChange={handleInputChange}
                 />
                 <Textarea
                   name="to.address"
-                  placeholder="Client's Address"
+                  placeholder="Supplier's Address"
                   value={data.to.address}
                   onChange={handleInputChange}
                 />
@@ -183,9 +182,9 @@ export default function InvoicePage() {
               />
             </div>
             
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="details.value">Invoice Number</Label>
+                <Label htmlFor="details.value">PO Number</Label>
                 <Input
                   id="details.value"
                   name="details.value"
@@ -194,12 +193,8 @@ export default function InvoicePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="date">Issue Date</Label>
+                <Label htmlFor="date">Order Date</Label>
                 <Input id="date" name="date" type="date" value={data.date} onChange={handleInputChange} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dueDate">Due Date</Label>
-                <Input id="dueDate" name="dueDate" type="date" value={data.dueDate} onChange={handleInputChange} />
               </div>
             </div>
 
@@ -255,11 +250,6 @@ export default function InvoicePage() {
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
               <Textarea id="notes" name="notes" placeholder="Any additional notes..." value={data.notes} onChange={handleInputChange} />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="vatRate">VAT Rate (%)</Label>
-              <Input id="vatRate" name="vatRate" type="number" placeholder="20" value={data.vatRate} onChange={handleInputChange} />
             </div>
           </div>
         </div>
