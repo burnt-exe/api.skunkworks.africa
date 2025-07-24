@@ -13,7 +13,8 @@ import { Textarea } from '@/components/ui/textarea';
 import DocumentPreview from '@/components/document-preview';
 import { suggestItemsAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Sparkles, Trash2, LoaderCircle, Printer, Download } from 'lucide-react';
+import { PlusCircle, Sparkles, Trash2, LoaderCircle, Printer, Download, Upload } from 'lucide-react';
+import React from 'react';
 
 export default function PurchaseOrderPage() {
   const [data, setData] = useState<DocumentData>({
@@ -32,11 +33,18 @@ export default function PurchaseOrderPage() {
     ],
     notes: 'Please deliver by EOD Friday.',
     vatRate: 20,
+    paymentDetails: {
+      bankName: 'Global Bank',
+      accountName: 'Your Company Inc.',
+      accountNumber: '1234567890',
+      sortCode: '12-34-56',
+    }
   });
 
   const [aiState, setAiState] = useState({ businessType: 'Manufacturing', vatRate: '20' });
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -48,6 +56,17 @@ export default function PurchaseOrderPage() {
       }));
     } else {
       setData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setData(prev => ({ ...prev, logoUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -172,14 +191,27 @@ export default function PurchaseOrderPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="logoUrl">Company Logo URL</Label>
-              <Input
-                id="logoUrl"
-                name="logoUrl"
-                placeholder="https://your-logo.com/logo.png"
-                value={data.logoUrl}
-                onChange={handleInputChange}
-              />
+              <Label htmlFor="logoUrl">Company Logo</Label>
+              <div className="flex items-center gap-4">
+                <Input
+                    id="logoUrl"
+                    name="logoUrl"
+                    placeholder="https://your-logo.com/logo.png"
+                    value={data.logoUrl}
+                    onChange={handleInputChange}
+                    className="flex-grow"
+                />
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="mr-2 h-4 w-4" /> Upload
+                </Button>
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                    accept="image/*"
+                />
+                </div>
             </div>
             
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -247,6 +279,30 @@ export default function PurchaseOrderPage() {
               </Button>
             </div>
             
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment Details</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="paymentDetails.bankName">Bank Name</Label>
+                  <Input id="paymentDetails.bankName" name="paymentDetails.bankName" value={data.paymentDetails?.bankName} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="paymentDetails.accountName">Account Name</Label>
+                  <Input id="paymentDetails.accountName" name="paymentDetails.accountName" value={data.paymentDetails?.accountName} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="paymentDetails.accountNumber">Account Number</Label>
+                  <Input id="paymentDetails.accountNumber" name="paymentDetails.accountNumber" value={data.paymentDetails?.accountNumber} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="paymentDetails.sortCode">Sort Code / BIC</Label>
+                  <Input id="paymentDetails.sortCode" name="paymentDetails.sortCode" value={data.paymentDetails?.sortCode} onChange={handleInputChange} />
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
               <Textarea id="notes" name="notes" placeholder="Any additional notes..." value={data.notes} onChange={handleInputChange} />

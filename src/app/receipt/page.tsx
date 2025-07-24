@@ -11,7 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import DocumentPreview from '@/components/document-preview';
-import { PlusCircle, Trash2, Printer, Download } from 'lucide-react';
+import { PlusCircle, Trash2, Printer, Download, Upload } from 'lucide-react';
+import React from 'react';
 
 export default function ReceiptPage() {
   const [data, setData] = useState<DocumentData>({
@@ -34,6 +35,7 @@ export default function ReceiptPage() {
   });
 
   const subtotal = useMemo(() => data.lineItems.reduce((acc, item) => acc + item.quantity * item.price, 0), [data.lineItems]);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -46,6 +48,17 @@ export default function ReceiptPage() {
     } else {
       const isNumeric = ['amountPaid'].includes(name);
       setData((prev) => ({ ...prev, [name]: isNumeric ? parseFloat(value) : value }));
+    }
+  };
+  
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setData(prev => ({ ...prev, logoUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -90,8 +103,27 @@ export default function ReceiptPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="logoUrl">Company Logo URL</Label>
-              <Input id="logoUrl" name="logoUrl" placeholder="https://your-logo.com/logo.png" value={data.logoUrl} onChange={handleInputChange} />
+              <Label htmlFor="logoUrl">Company Logo</Label>
+              <div className="flex items-center gap-4">
+                <Input
+                    id="logoUrl"
+                    name="logoUrl"
+                    placeholder="https://your-logo.com/logo.png"
+                    value={data.logoUrl}
+                    onChange={handleInputChange}
+                    className="flex-grow"
+                />
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="mr-2 h-4 w-4" /> Upload
+                </Button>
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                    accept="image/*"
+                />
+                </div>
             </div>
             
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

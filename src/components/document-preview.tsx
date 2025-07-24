@@ -14,7 +14,7 @@ interface DocumentPreviewProps {
 export default function DocumentPreview({ data }: DocumentPreviewProps) {
   const { 
     title, logoUrl, from, to, details, date, dueDate, lineItems, notes, vatRate,
-    paymentMethod, amountPaid, payPeriod, deductions
+    paymentMethod, amountPaid, payPeriod, deductions, paymentDetails
   } = data;
 
   const subtotal = useMemo(() => lineItems.reduce((acc, item) => acc + item.quantity * item.price, 0), [lineItems]);
@@ -203,12 +203,28 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
             </div>
           </section>
 
-          {notes && (
-            <section>
-              <h2 className="font-semibold text-muted-foreground mb-2">Notes</h2>
-              <p className="whitespace-pre-line">{notes}</p>
+          {(notes || paymentDetails) && (
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {notes && (
+                <div>
+                <h2 className="font-semibold text-muted-foreground mb-2">Notes</h2>
+                <p className="whitespace-pre-line">{notes}</p>
+                </div>
+            )}
+            {paymentDetails && (
+                <div>
+                <h2 className="font-semibold text-muted-foreground mb-2">Payment Details</h2>
+                <div className="space-y-1">
+                    <p><span className="font-medium">Bank:</span> {paymentDetails.bankName}</p>
+                    <p><span className="font-medium">Account Name:</span> {paymentDetails.accountName}</p>
+                    <p><span className="font-medium">Account No:</span> {paymentDetails.accountNumber}</p>
+                    <p><span className="font-medium">Sort Code/BIC:</span> {paymentDetails.sortCode}</p>
+                </div>
+                </div>
+            )}
             </section>
           )}
+
 
           <footer className="text-center text-xs text-muted-foreground pt-8">
             <p>Thank you for your business!</p>

@@ -9,6 +9,13 @@ export interface CompanyInfo {
   address: string;
 }
 
+export interface PaymentDetails {
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  sortCode: string;
+}
+
 export interface DocumentData {
   title: 'INVOICE' | 'PURCHASE ORDER' | 'SALES ORDER' | 'RECEIPT' | 'PAYSLIP';
   logoUrl: string;
@@ -27,4 +34,5 @@ export interface DocumentData {
   amountPaid?: number;
   payPeriod?: string;
   deductions?: LineItem[];
+  paymentDetails?: PaymentDetails;
 }
