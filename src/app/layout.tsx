@@ -9,10 +9,12 @@ import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { SidebarNav } from '@/components/sidebar-nav';
 import { usePathname } from 'next/navigation';
 
+/*
 export const metadata: Metadata = {
   title: 'EasyDocs',
   description: 'Generate POs, Invoices, and more with ease.',
 };
+*/
 
 export default function RootLayout({
   children,
@@ -40,6 +42,8 @@ export default function RootLayout({
 function ConditionalSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
+  // We are rendering the sidebar conditionally based on the path.
+  // The landing page ('/') will not have a sidebar, but all other pages will.
   if (pathname === '/') {
     return <main>{children}</main>;
   }
