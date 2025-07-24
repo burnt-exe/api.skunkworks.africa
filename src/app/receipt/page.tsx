@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { DocumentData, LineItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,25 +14,38 @@ import DocumentPreview from '@/components/document-preview';
 import { PlusCircle, Trash2, Printer, Download, Upload } from 'lucide-react';
 import React from 'react';
 
+const initialData: DocumentData = {
+  title: 'RECEIPT',
+  logoUrl: '',
+  from: { name: 'Your Company', address: '123 Main St, Anytown, USA' },
+  to: { name: 'Customer Name', address: '456 Oak Ave, Otherville, USA' },
+  details: {
+    label: 'Receipt No.',
+    value: '',
+  },
+  date: '',
+  lineItems: [
+    { description: 'Service Rendered', quantity: 1, price: 200.0 },
+    { description: 'Product Sold', quantity: 2, price: 25.0 },
+  ],
+  notes: 'Thank you for your payment.',
+  paymentMethod: 'Credit Card',
+  amountPaid: 250.00,
+};
+
 export default function ReceiptPage() {
-  const [data, setData] = useState<DocumentData>({
-    title: 'RECEIPT',
-    logoUrl: '',
-    from: { name: 'Your Company', address: '123 Main St, Anytown, USA' },
-    to: { name: 'Customer Name', address: '456 Oak Ave, Otherville, USA' },
-    details: {
-      label: 'Receipt No.',
-      value: `RCPT-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
-    },
-    date: new Date().toISOString().split('T')[0],
-    lineItems: [
-      { description: 'Service Rendered', quantity: 1, price: 200.0 },
-      { description: 'Product Sold', quantity: 2, price: 25.0 },
-    ],
-    notes: 'Thank you for your payment.',
-    paymentMethod: 'Credit Card',
-    amountPaid: 250.00,
-  });
+  const [data, setData] = useState<DocumentData>(initialData);
+
+  useEffect(() => {
+    setData((prev) => ({
+      ...prev,
+      details: {
+        ...prev.details,
+        value: `RCPT-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+      },
+      date: new Date().toISOString().split('T')[0],
+    }));
+  }, []);
 
   const subtotal = useMemo(() => data.lineItems.reduce((acc, item) => acc + item.quantity * item.price, 0), [data.lineItems]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -213,3 +226,5 @@ export default function ReceiptPage() {
     </div>
   );
 }
+
+    

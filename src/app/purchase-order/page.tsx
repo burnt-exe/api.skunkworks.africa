@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import type { DocumentData, LineItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,30 +16,43 @@ import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Sparkles, Trash2, LoaderCircle, Printer, Download, Upload } from 'lucide-react';
 import React from 'react';
 
+const initialData: DocumentData = {
+  title: 'PURCHASE ORDER',
+  logoUrl: '',
+  from: { name: 'Your Company', address: '123 Main St, Anytown, USA' },
+  to: { name: 'Supplier Inc.', address: '1 supply Rd, Factoryville, USA' },
+  details: {
+    label: 'PO No.',
+    value: '',
+  },
+  date: '',
+  lineItems: [
+    { description: 'Raw Material A', quantity: 100, price: 10.0 },
+    { description: 'Component B', quantity: 50, price: 25.0 },
+  ],
+  notes: 'Please deliver by EOD Friday.',
+  vatRate: 20,
+  paymentDetails: {
+    bankName: 'Global Bank',
+    accountName: 'Your Company Inc.',
+    accountNumber: '1234567890',
+    sortCode: '12-34-56',
+  }
+};
+
 export default function PurchaseOrderPage() {
-  const [data, setData] = useState<DocumentData>({
-    title: 'PURCHASE ORDER',
-    logoUrl: '',
-    from: { name: 'Your Company', address: '123 Main St, Anytown, USA' },
-    to: { name: 'Supplier Inc.', address: '1 supply Rd, Factoryville, USA' },
-    details: {
-      label: 'PO No.',
-      value: `PO-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
-    },
-    date: new Date().toISOString().split('T')[0],
-    lineItems: [
-      { description: 'Raw Material A', quantity: 100, price: 10.0 },
-      { description: 'Component B', quantity: 50, price: 25.0 },
-    ],
-    notes: 'Please deliver by EOD Friday.',
-    vatRate: 20,
-    paymentDetails: {
-      bankName: 'Global Bank',
-      accountName: 'Your Company Inc.',
-      accountNumber: '1234567890',
-      sortCode: '12-34-56',
-    }
-  });
+  const [data, setData] = useState<DocumentData>(initialData);
+
+  useEffect(() => {
+    setData((prev) => ({
+      ...prev,
+      details: {
+        ...prev.details,
+        value: `PO-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+      },
+      date: new Date().toISOString().split('T')[0],
+    }));
+  }, []);
 
   const [aiState, setAiState] = useState({ businessType: 'Manufacturing', vatRate: '20' });
   const [isPending, startTransition] = useTransition();
@@ -337,3 +350,5 @@ export default function PurchaseOrderPage() {
     </div>
   );
 }
+
+    

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { DocumentData, LineItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -14,25 +14,46 @@ import DocumentPreview from '@/components/document-preview';
 import { PlusCircle, Trash2, Printer, Download, Upload } from 'lucide-react';
 import React from 'react';
 
+const initialData: DocumentData = {
+  title: 'PAYSLIP',
+  logoUrl: '',
+  from: { name: 'Your Company', address: '123 Main St, Anytown, USA' },
+  to: { name: 'Employee Name', address: '789 Pine St, Workerville, USA' },
+  details: { label: 'Employee ID', value: 'EMP-007' },
+  date: '',
+  payPeriod: '',
+  lineItems: [
+    { description: 'Basic Salary', quantity: 1, price: 3000 },
+    { description: 'Bonus', quantity: 1, price: 500 },
+  ],
+  deductions: [
+      { description: 'Tax', quantity: 1, price: 400 },
+      { description: 'Insurance', quantity: 1, price: 100 },
+  ],
+  notes: 'Payment has been processed via direct deposit.',
+};
+
 export default function PayslipPage() {
-  const [data, setData] = useState<DocumentData>({
-    title: 'PAYSLIP',
-    logoUrl: '',
-    from: { name: 'Your Company', address: '123 Main St, Anytown, USA' },
-    to: { name: 'Employee Name', address: '789 Pine St, Workerville, USA' },
-    details: { label: 'Employee ID', value: 'EMP-007' },
-    date: new Date().toISOString().split('T')[0],
-    payPeriod: '01/07/2024 - 31/07/2024',
-    lineItems: [
-      { description: 'Basic Salary', quantity: 1, price: 3000 },
-      { description: 'Bonus', quantity: 1, price: 500 },
-    ],
-    deductions: [
-        { description: 'Tax', quantity: 1, price: 400 },
-        { description: 'Insurance', quantity: 1, price: 100 },
-    ],
-    notes: 'Payment has been processed via direct deposit.',
-  });
+  const [data, setData] = useState<DocumentData>(initialData);
+
+  useEffect(() => {
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    const formatDate = (date: Date) => {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+
+    setData((prev) => ({
+      ...prev,
+      date: today.toISOString().split('T')[0],
+      payPeriod: `${formatDate(firstDayOfMonth)} - ${formatDate(lastDayOfMonth)}`,
+    }));
+  }, []);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -220,3 +241,5 @@ export default function PayslipPage() {
     </div>
   );
 }
+
+    

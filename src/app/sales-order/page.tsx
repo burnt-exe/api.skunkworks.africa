@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import type { DocumentData, LineItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,30 +16,43 @@ import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Sparkles, Trash2, LoaderCircle, Printer, Download, Upload } from 'lucide-react';
 import React from 'react';
 
+const initialData: DocumentData = {
+  title: 'SALES ORDER',
+  logoUrl: '',
+  from: { name: 'Your Company', address: '123 Main St, Anytown, USA' },
+  to: { name: 'Customer Company', address: '456 Oak Ave, Otherville, USA' },
+  details: {
+    label: 'SO No.',
+    value: '',
+  },
+  date: '',
+  lineItems: [
+    { description: 'Product X', quantity: 10, price: 75.0 },
+    { description: 'Service Y', quantity: 1, price: 300.0 },
+  ],
+  notes: 'Items will be shipped within 3-5 business days.',
+  vatRate: 20,
+  paymentDetails: {
+    bankName: 'Global Bank',
+    accountName: 'Your Company Inc.',
+    accountNumber: '1234567890',
+    sortCode: '12-34-56',
+  }
+};
+
 export default function SalesOrderPage() {
-  const [data, setData] = useState<DocumentData>({
-    title: 'SALES ORDER',
-    logoUrl: '',
-    from: { name: 'Your Company', address: '123 Main St, Anytown, USA' },
-    to: { name: 'Customer Company', address: '456 Oak Ave, Otherville, USA' },
-    details: {
-      label: 'SO No.',
-      value: `SO-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
-    },
-    date: new Date().toISOString().split('T')[0],
-    lineItems: [
-      { description: 'Product X', quantity: 10, price: 75.0 },
-      { description: 'Service Y', quantity: 1, price: 300.0 },
-    ],
-    notes: 'Items will be shipped within 3-5 business days.',
-    vatRate: 20,
-    paymentDetails: {
-      bankName: 'Global Bank',
-      accountName: 'Your Company Inc.',
-      accountNumber: '1234567890',
-      sortCode: '12-34-56',
-    }
-  });
+  const [data, setData] = useState<DocumentData>(initialData);
+
+  useEffect(() => {
+    setData((prev) => ({
+      ...prev,
+      details: {
+        ...prev.details,
+        value: `SO-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+      },
+      date: new Date().toISOString().split('T')[0],
+    }));
+  }, []);
 
   const [aiState, setAiState] = useState({ businessType: 'Retail', vatRate: '20' });
   const [isPending, startTransition] = useTransition();
@@ -342,3 +355,5 @@ export default function SalesOrderPage() {
     </div>
   );
 }
+
+    

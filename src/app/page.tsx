@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import type { DocumentData, LineItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,31 +16,45 @@ import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Sparkles, Trash2, LoaderCircle, Printer, Download, Upload } from 'lucide-react';
 import React from 'react';
 
+const initialData: DocumentData = {
+  title: 'INVOICE',
+  logoUrl: '',
+  from: { name: 'Your Company', address: '123 Main St, Anytown, USA' },
+  to: { name: 'Client Company', address: '456 Oak Ave, Otherville, USA' },
+  details: {
+    label: 'Invoice No.',
+    value: '',
+  },
+  date: '',
+  dueDate: '',
+  lineItems: [
+    { description: 'Item 1', quantity: 2, price: 50.0 },
+    { description: 'Item 2', quantity: 1, price: 150.0 },
+  ],
+  notes: 'Thank you for your business.',
+  vatRate: 20,
+  paymentDetails: {
+    bankName: 'Global Bank',
+    accountName: 'Your Company Inc.',
+    accountNumber: '1234567890',
+    sortCode: '12-34-56',
+  }
+};
+
 export default function InvoicePage() {
-  const [data, setData] = useState<DocumentData>({
-    title: 'INVOICE',
-    logoUrl: '',
-    from: { name: 'Your Company', address: '123 Main St, Anytown, USA' },
-    to: { name: 'Client Company', address: '456 Oak Ave, Otherville, USA' },
-    details: {
-      label: 'Invoice No.',
-      value: `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
-    },
-    date: new Date().toISOString().split('T')[0],
-    dueDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0],
-    lineItems: [
-      { description: 'Item 1', quantity: 2, price: 50.0 },
-      { description: 'Item 2', quantity: 1, price: 150.0 },
-    ],
-    notes: 'Thank you for your business.',
-    vatRate: 20,
-    paymentDetails: {
-      bankName: 'Global Bank',
-      accountName: 'Your Company Inc.',
-      accountNumber: '1234567890',
-      sortCode: '12-34-56',
-    }
-  });
+  const [data, setData] = useState<DocumentData>(initialData);
+
+  useEffect(() => {
+    setData((prev) => ({
+      ...prev,
+      details: {
+        ...prev.details,
+        value: `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+      },
+      date: new Date().toISOString().split('T')[0],
+      dueDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0],
+    }));
+  }, []);
 
   const [aiState, setAiState] = useState({ businessType: 'Consulting', vatRate: '20' });
   const [isPending, startTransition] = useTransition();
@@ -347,3 +361,5 @@ export default function InvoicePage() {
     </div>
   );
 }
+
+    
