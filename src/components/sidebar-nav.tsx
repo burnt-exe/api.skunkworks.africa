@@ -1,12 +1,14 @@
+
 'use client';
 
 import { usePathname } from 'next/navigation';
 import { SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from './ui/sidebar';
-import { FileText, Receipt, ShoppingCart, Users, Send, Briefcase, FileSignature, Package } from 'lucide-react';
+import { FileText, Receipt, ShoppingCart, Users, Send, Briefcase, FileSignature, Package, Home } from 'lucide-react';
 import Link from 'next/link';
 
 const navItems = [
-  { href: '/', label: 'Invoice', icon: FileText },
+  { href: '/', label: 'Home', icon: Home },
+  { href: '/invoice', label: 'Invoice', icon: FileText },
   { href: '/easy-quote', label: 'EasyQuote', icon: FileSignature },
   { href: '/purchase-order', label: 'Purchase Order', icon: ShoppingCart },
   { href: '/sales-order', label: 'Sales Order', icon: Send },
@@ -21,10 +23,10 @@ export function SidebarNav() {
   return (
     <div className='flex flex-col h-full'>
       <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
             <Briefcase className="w-8 h-8 text-primary"/>
             <h1 className="text-xl font-semibold group-data-[collapsible=icon]:hidden">EasyDocs</h1>
-        </div>
+        </Link>
       </SidebarHeader>
       <SidebarMenu className="flex-1 p-4">
         {navItems.map((item) => (

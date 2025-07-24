@@ -1,9 +1,13 @@
+
+'use client';
+
 import type { Metadata } from 'next';
 import './globals.css';
 import './print.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/sidebar-nav';
+import { usePathname } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'EasyDocs',
@@ -26,16 +30,28 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <SidebarProvider>
-          <Sidebar>
-            <SidebarNav />
-          </Sidebar>
-          <SidebarInset>
-            <main className="p-4 sm:p-6 lg:p-8">{children}</main>
-          </SidebarInset>
-        </SidebarProvider>
+        <ConditionalSidebar>{children}</ConditionalSidebar>
         <Toaster />
       </body>
     </html>
+  );
+}
+
+function ConditionalSidebar({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
+  if (pathname === '/') {
+    return <main>{children}</main>;
+  }
+
+  return (
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarNav />
+      </Sidebar>
+      <SidebarInset>
+        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
