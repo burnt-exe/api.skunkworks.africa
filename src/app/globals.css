@@ -70,3 +70,27 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .background-flow {
+    transition: transform 0.5s ease-in-out;
+    will-change: transform;
+  }
+
+  .background-flow:hover {
+    animation: backgroundShift 15s ease-in-out infinite alternate;
+  }
+}
+
+
+@keyframes backgroundShift {
+  0% {
+    transform: scale(1) translateX(0) translateY(0);
+  }
+  50% {
+    transform: scale(1.1) translateX(-5px) translateY(5px);
+  }
+  100% {
+    transform: scale(1) translateX(5px) translateY(-5px);
+  }
+}

@@ -36,7 +36,7 @@ export default function LandingPage() {
 
   return (
     <div
-      className="flex flex-col min-h-screen bg-cover bg-center bg-no-repeat transition-all duration-1000"
+      className="flex flex-col min-h-screen bg-cover bg-center bg-no-repeat transition-all duration-1000 background-flow"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
       <div className="flex flex-col min-h-screen bg-black/50">
