@@ -83,6 +83,19 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
     }
   }
 
+  const getDueDateLabel = () => {
+    if (!dueDate) return null;
+    switch(title) {
+        case 'QUOTE':
+            return 'Valid Until';
+        default:
+            return 'Due Date';
+    }
+  }
+
+  const dueDateLabel = getDueDateLabel();
+
+
   return (
     <Card className="printable-area h-full w-full overflow-auto shadow-lg" id="document-preview">
       <CardContent className="p-8 sm:p-12 text-sm">
@@ -121,9 +134,9 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
                 <p className="text-muted-foreground">Date</p>
                 <p className="font-medium">{new Date(date + 'T00:00:00').toLocaleDateString()}</p>
              </div>
-             {dueDate && (
+             {dueDateLabel && (
              <div>
-                <p className="text-muted-foreground">Due Date</p>
+                <p className="text-muted-foreground">{dueDateLabel}</p>
                 <p className="font-medium">{new Date(dueDate + 'T00:00:00').toLocaleDateString()}</p>
              </div>
              )}

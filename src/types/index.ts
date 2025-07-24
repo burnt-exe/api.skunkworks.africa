@@ -17,7 +17,7 @@ export interface PaymentDetails {
 }
 
 export interface DocumentData {
-  title: 'INVOICE' | 'PURCHASE ORDER' | 'SALES ORDER' | 'RECEIPT' | 'PAYSLIP';
+  title: 'INVOICE' | 'PURCHASE ORDER' | 'SALES ORDER' | 'RECEIPT' | 'PAYSLIP' | 'QUOTE';
   logoUrl: string;
   from: CompanyInfo;
   to: CompanyInfo;

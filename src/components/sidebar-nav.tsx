@@ -2,11 +2,12 @@
 
 import { usePathname } from 'next/navigation';
 import { SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from './ui/sidebar';
-import { FileText, Receipt, ShoppingCart, Users, Send, Briefcase } from 'lucide-react';
+import { FileText, Receipt, ShoppingCart, Users, Send, Briefcase, FileSignature } from 'lucide-react';
 import Link from 'next/link';
 
 const navItems = [
   { href: '/', label: 'Invoice', icon: FileText },
+  { href: '/easy-quote', label: 'EasyQuote', icon: FileSignature },
   { href: '/purchase-order', label: 'Purchase Order', icon: ShoppingCart },
   { href: '/sales-order', label: 'Sales Order', icon: Send },
   { href: '/receipt', label: 'Receipt', icon: Receipt },
