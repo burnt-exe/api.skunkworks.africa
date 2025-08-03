@@ -4,12 +4,9 @@
 import Link from 'next/link';
 import { Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useSidebar } from '@/components/ui/sidebar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export default function LandingPage() {
-  const { open, setOpen } = useSidebar();
-
   return (
      <div className="flex flex-col min-h-screen bg-[#1a1a1a] text-white -m-4 sm:-m-6 lg:-m-8">
       <header className="fixed top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-transparent">
