@@ -4,14 +4,25 @@
 import Link from 'next/link';
 import { Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useSidebar } from '@/components/ui/sidebar';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export default function LandingPage() {
+  const { open, setOpen } = useSidebar();
+
   return (
-    <div className="flex flex-col min-h-screen bg-[#1a1a1a] text-white">
+     <div className="flex flex-col min-h-screen bg-[#1a1a1a] text-white">
+      <header className="fixed top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-transparent">
+        <Link href="/" className="flex items-center gap-2">
+            <Briefcase className="w-8 h-8 text-primary"/>
+            <h1 className="text-xl font-semibold">EasyDocs</h1>
+        </Link>
+        <SidebarTrigger />
+      </header>
       <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
         <div className="max-w-4xl mx-auto">
           <Link href="/invoice" className="inline-block mb-6 md:mb-8">
-             <div className="group rounded-full bg-white/10 p-4 md:p-6 shadow-2xl backdrop-blur-md transform transition-transform duration-300 hover:scale-105">
+             <div className="group rounded-full bg-white/10 p-4 md:p-6 shadow-2xl backdrop-blur-md transform transition-transform duration-300 hover:scale-105 animate-pulse-slow">
                 <Briefcase className="h-16 w-16 md:h-24 md:w-24 text-white transition-transform duration-300 group-hover:scale-110" />
             </div>
           </Link>

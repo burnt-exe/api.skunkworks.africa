@@ -32,30 +32,18 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <ConditionalSidebar>{children}</ConditionalSidebar>
+        <SidebarProvider>
+          <Sidebar>
+            <SidebarNav />
+          </Sidebar>
+          <SidebarInset>
+            <main className="relative min-h-screen">
+                {children}
+            </main>
+          </SidebarInset>
+        </SidebarProvider>
         <Toaster />
       </body>
     </html>
-  );
-}
-
-function ConditionalSidebar({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-
-  // We are rendering the sidebar conditionally based on the path.
-  // The landing page ('/') will not have a sidebar, but all other pages will.
-  if (pathname === '/') {
-    return <main>{children}</main>;
-  }
-
-  return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarNav />
-      </Sidebar>
-      <SidebarInset>
-        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
   );
 }
