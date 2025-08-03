@@ -1,20 +1,11 @@
 
 'use client';
 
-import type { Metadata } from 'next';
 import './globals.css';
 import './print.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/sidebar-nav';
-import { usePathname } from 'next/navigation';
-
-/*
-export const metadata: Metadata = {
-  title: 'EasyDocs',
-  description: 'Generate POs, Invoices, and more with ease.',
-};
-*/
 
 export default function RootLayout({
   children,
@@ -37,7 +28,7 @@ export default function RootLayout({
             <SidebarNav />
           </Sidebar>
           <SidebarInset>
-            <main className="relative min-h-screen">
+            <main className="relative min-h-screen p-4 sm:p-6 lg:p-8">
                 {children}
             </main>
           </SidebarInset>

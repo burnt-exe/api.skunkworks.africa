@@ -11,7 +11,7 @@ export default function LandingPage() {
   const { open, setOpen } = useSidebar();
 
   return (
-     <div className="flex flex-col min-h-screen bg-[#1a1a1a] text-white">
+     <div className="flex flex-col min-h-screen bg-[#1a1a1a] text-white -m-4 sm:-m-6 lg:-m-8">
       <header className="fixed top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-transparent">
         <Link href="/" className="flex items-center gap-2">
             <Briefcase className="w-8 h-8 text-primary"/>
