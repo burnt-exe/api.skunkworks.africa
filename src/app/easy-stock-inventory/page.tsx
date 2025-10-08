@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Edit, Trash2, ScanLine, Plus, MoreHorizontal, Boxes } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, ScanLine, Plus, MoreHorizontal, Boxes, Upload, Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -41,6 +41,8 @@ import { BarcodeScanner } from '@/components/barcode-scanner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Papa from 'papaparse';
+import { useToast } from '@/hooks/use-toast';
 
 
 type StockItemStatus = 'In Stock' | 'Low Stock' | 'Out of Stock';
@@ -75,6 +77,8 @@ export default function EasyStockInventoryPage() {
   const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
   const [isRestockOpen, setIsRestockOpen] = useState(false);
   const [restockingItem, setRestockingItem] = useState<StockItem | null>(null);
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const { toast } = useToast();
 
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -227,6 +231,41 @@ export default function EasyStockInventoryPage() {
     setIsRestockOpen(false);
   };
 
+  const handleExportCSV = () => {
+    const csv = Papa.unparse(stockItems.map(({id, status, ...rest}) => rest));
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'inventory.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImportCSV = (importedData: Omit<StockItem, 'id' | 'status'>[]) => {
+      setStockItems(prev => {
+          const updatedStock = [...prev];
+          const prevSkuMap = new Map(prev.map(item => [item.sku, item]));
+
+          for (const newItem of importedData) {
+              if (prevSkuMap.has(newItem.sku)) {
+                  // Update existing item
+                  const existingItem = prevSkuMap.get(newItem.sku)!;
+                  const itemIndex = updatedStock.findIndex(item => item.id === existingItem.id);
+                  updatedStock[itemIndex] = { ...existingItem, ...newItem, status: getStatus(newItem.quantity) };
+              } else {
+                  // Add new item
+                  updatedStock.push({ ...newItem, id: String(Date.now()) + newItem.sku, status: getStatus(newItem.quantity) });
+              }
+          }
+          return updatedStock;
+      });
+      toast({ title: 'Success', description: 'Inventory has been updated from CSV.' });
+      setIsImportOpen(false);
+  };
+
 
   const filterButtons: { label: string, value: FilterStatus }[] = [
       { label: 'All', value: 'All'},
@@ -262,6 +301,19 @@ export default function EasyStockInventoryPage() {
                     <ScanLine className="mr-2" />
                     Scan
                 </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline"><MoreHorizontal /></Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                      <DropdownMenuItem onSelect={() => setIsImportOpen(true)}>
+                          <Upload className="mr-2" /> Import CSV
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={handleExportCSV}>
+                          <Download className="mr-2" /> Export CSV
+                      </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button onClick={handleAddNewItem} className="hidden md:inline-flex">
                   <PlusCircle className="mr-2" />
                   Add New Item
@@ -462,6 +514,11 @@ export default function EasyStockInventoryPage() {
             <BarcodeScanner onResult={handleBarcodeScanned} />
         </DialogContent>
       </Dialog>
+      <ImportCSVDialog
+        isOpen={isImportOpen}
+        onOpenChange={setIsImportOpen}
+        onImport={handleImportCSV}
+      />
     </>
   );
 }
@@ -681,6 +738,128 @@ function RestockDialog({ isOpen, onOpenChange, onRestock, item }: RestockDialogP
                         <Button type="submit" disabled={quantityToAdd <= 0}>Add to Stock</Button>
                     </DialogFooter>
                 </form>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+interface ImportCSVDialogProps {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  onImport: (data: Omit<StockItem, 'id' | 'status'>[]) => void;
+}
+
+function ImportCSVDialog({ isOpen, onOpenChange, onImport }: ImportCSVDialogProps) {
+    const [file, setFile] = useState<File | null>(null);
+    const [previewData, setPreviewData] = useState<any[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        if (!isOpen) {
+            setFile(null);
+            setPreviewData([]);
+        }
+    }, [isOpen]);
+    
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        if (selectedFile) {
+            if (selectedFile.type !== 'text/csv') {
+                toast({ variant: 'destructive', title: 'Invalid File Type', description: 'Please upload a CSV file.' });
+                return;
+            }
+            setFile(selectedFile);
+            Papa.parse(selectedFile, {
+                header: true,
+                skipEmptyLines: true,
+                preview: 5,
+                complete: (results) => {
+                    setPreviewData(results.data);
+                }
+            });
+        }
+    };
+
+    const handleImport = () => {
+        if (!file) return;
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            dynamicTyping: true,
+            complete: (results) => {
+                const requiredFields = ['name', 'sku', 'quantity', 'price'];
+                const fileFields = results.meta.fields || [];
+                const hasAllFields = requiredFields.every(field => fileFields.includes(field));
+
+                if (!hasAllFields) {
+                    toast({ variant: 'destructive', title: 'Invalid CSV Format', description: `CSV must contain headers: ${requiredFields.join(', ')}.` });
+                    return;
+                }
+                
+                // Type checking for parsed data could be more robust here
+                onImport(results.data as Omit<StockItem, 'id' | 'status'>[]);
+            }
+        });
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-lg">
+                <DialogHeader>
+                    <DialogTitle>Import from CSV</DialogTitle>
+                    <DialogDescription>
+                        Upload a CSV file to add or update inventory items. Ensure your CSV has columns for 'name', 'sku', 'quantity', and 'price'.
+                    </DialogDescription>
+                </DialogHeader>
+                <div 
+                    className="mt-4 border-2 border-dashed border-muted-foreground/50 rounded-lg p-8 text-center cursor-pointer hover:bg-muted"
+                    onClick={() => fileInputRef.current?.click()}
+                >
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".csv"
+                        className="hidden"
+                        onChange={handleFileChange}
+                    />
+                    {!file ? (
+                        <div>
+                            <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <p className="mt-2 text-sm text-muted-foreground">Click or drag file to this area to upload</p>
+                        </div>
+                    ) : (
+                         <p className="text-sm font-medium">{file.name}</p>
+                    )}
+                </div>
+
+                {previewData.length > 0 && (
+                    <div className="mt-4">
+                        <h4 className="font-semibold text-sm mb-2">CSV Preview (first 5 rows)</h4>
+                        <div className="max-h-40 overflow-auto rounded-md border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        {Object.keys(previewData[0]).map(key => <TableHead key={key}>{key}</TableHead>)}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {previewData.map((row, i) => (
+                                        <TableRow key={i}>
+                                            {Object.values(row).map((val: any, j) => <TableCell key={j}>{String(val)}</TableCell>)}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+                )}
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button type="button" variant="secondary">Cancel</Button>
+                    </DialogClose>
+                    <Button type="button" onClick={handleImport} disabled={!file}>Import</Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     )
