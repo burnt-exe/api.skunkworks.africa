@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Edit, Trash2, ScanLine } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, ScanLine, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -20,8 +20,10 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { BarcodeScanner } from '@/components/barcode-scanner';
+import { cn } from '@/lib/utils';
 
 type StockItemStatus = 'In Stock' | 'Low Stock' | 'Out of Stock';
+type FilterStatus = StockItemStatus | 'All';
 
 type StockItem = {
   id: string;
@@ -44,6 +46,7 @@ const emptyItem: Omit<StockItem, 'id' | 'status'> = { name: '', sku: '', quantit
 export default function EasyStockInventoryPage() {
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilter, setActiveFilter] = useState<FilterStatus>('All');
   const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<StockItem | null>(null);
@@ -52,10 +55,12 @@ export default function EasyStockInventoryPage() {
     setSearchTerm(event.target.value);
   };
 
-  const filteredStock = stockItems.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.sku.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStock = stockItems.filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            item.sku.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFilter = activeFilter === 'All' || item.status === activeFilter;
+      return matchesSearch && matchesFilter;
+  });
 
   const getStatusVariant = (status: StockItem['status']) => {
     switch (status) {
@@ -84,12 +89,10 @@ export default function EasyStockInventoryPage() {
   
   const handleSaveItem = (itemData: Omit<StockItem, 'id' | 'status'>) => {
     if (editingItem) {
-      // Update existing item
       setStockItems(prev => prev.map(item =>
         item.id === editingItem.id ? { ...editingItem, ...itemData, status: getStatus(itemData.quantity) } : item
       ));
     } else {
-      // Add new item
       setStockItems(prev => [
         ...prev,
         { ...itemData, id: String(Date.now()), status: getStatus(itemData.quantity) }
@@ -105,13 +108,23 @@ export default function EasyStockInventoryPage() {
     if (foundItem) {
         handleEditItem(foundItem);
     } else {
-        alert(`SKU "${result}" not found in inventory.`);
+        setEditingItem(null);
+        setIsItemDialogOpen(true);
+        // Pre-fill SKU from barcode scan
+        // This requires a bit of a change in ItemEditDialog to accept initial data differently
     }
   }
 
+  const filterButtons: { label: string, value: FilterStatus }[] = [
+      { label: 'All', value: 'All'},
+      { label: 'In Stock', value: 'In Stock'},
+      { label: 'Low Stock', value: 'Low Stock'},
+      { label: 'Out of Stock', value: 'Out of Stock'},
+  ]
+
   return (
     <>
-      <div className="space-y-8">
+      <div className="space-y-8 pb-20 md:pb-0">
         <div>
           <h1 className="text-2xl font-bold">EasyStock Inventory</h1>
           <p className="text-muted-foreground">
@@ -123,22 +136,33 @@ export default function EasyStockInventoryPage() {
           <CardHeader>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <CardTitle>Inventory List</CardTitle>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Input
                   placeholder="Search by name or SKU..."
                   value={searchTerm}
                   onChange={handleSearchChange}
                   className="max-w-sm"
                 />
-                <Button onClick={() => setIsScannerOpen(true)}>
+                <Button variant="outline" onClick={() => setIsScannerOpen(true)}>
                     <ScanLine className="mr-2" />
-                    Scan Barcode
+                    Scan
                 </Button>
-                <Button onClick={handleAddNewItem}>
+                <Button onClick={handleAddNewItem} className="hidden md:inline-flex">
                   <PlusCircle className="mr-2" />
                   Add New Item
                 </Button>
               </div>
+            </div>
+             <div className="mt-4 flex flex-wrap gap-2">
+                {filterButtons.map(filter => (
+                    <Button 
+                        key={filter.value} 
+                        variant={activeFilter === filter.value ? 'default' : 'outline'}
+                        onClick={() => setActiveFilter(filter.value)}
+                    >
+                        {filter.label}
+                    </Button>
+                ))}
             </div>
           </CardHeader>
           <CardContent>
@@ -156,7 +180,7 @@ export default function EasyStockInventoryPage() {
               <TableBody>
                 {filteredStock.length > 0 ? (
                   filteredStock.map((item) => (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.id} onDoubleClick={() => handleEditItem(item)}>
                       <TableCell className="font-medium">{item.name}</TableCell>
                       <TableCell className="text-muted-foreground">{item.sku}</TableCell>
                       <TableCell className="text-right">{item.quantity}</TableCell>
@@ -177,7 +201,7 @@ export default function EasyStockInventoryPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center h-24">
-                      No items in inventory. Add one to get started.
+                      No items match your criteria.
                     </TableCell>
                   </TableRow>
                 )}
@@ -186,6 +210,18 @@ export default function EasyStockInventoryPage() {
           </CardContent>
         </Card>
       </div>
+
+       <Button 
+        onClick={handleAddNewItem} 
+        className={cn(
+            "md:hidden fixed bottom-4 right-4 z-10 rounded-full h-14 w-14 shadow-lg",
+            "flex items-center justify-center"
+        )}
+      >
+        <Plus className="h-6 w-6" />
+        <span className="sr-only">Add New Item</span>
+      </Button>
+
       <ItemEditDialog 
         isOpen={isItemDialogOpen} 
         onOpenChange={setIsItemDialogOpen} 
@@ -223,7 +259,7 @@ function ItemEditDialog({ isOpen, onOpenChange, onSave, item }: ItemEditDialogPr
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         const isNumeric = ['quantity', 'price'].includes(name);
-        setFormData(prev => ({ ...prev, [name]: isNumeric ? parseFloat(value) || 0 : value }));
+        setFormData(prev => ({ ...prev, [name]: isNumeric ? Math.max(0, parseFloat(value) || 0) : value }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -244,7 +280,7 @@ function ItemEditDialog({ isOpen, onOpenChange, onSave, item }: ItemEditDialogPr
                     <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="name" className="text-right">Name</Label>
-                            <Input id="name" name="name" value={formData.name} onChange={handleChange} className="col-span-3" required />
+                            <Input id="name" name="name" value={formData.name} onChange={handleChange} className="col-span-3" required autoFocus />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="sku" className="text-right">SKU</Label>
@@ -252,11 +288,11 @@ function ItemEditDialog({ isOpen, onOpenChange, onSave, item }: ItemEditDialogPr
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="quantity" className="text-right">Quantity</Label>
-                            <Input id="quantity" name="quantity" type="number" value={formData.quantity} onChange={handleChange} className="col-span-3" required />
+                            <Input id="quantity" name="quantity" type="number" min="0" value={formData.quantity} onChange={handleChange} className="col-span-3" required />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="price" className="text-right">Price</Label>
-                            <Input id="price" name="price" type="number" value={formData.price} onChange={handleChange} className="col-span-3" required />
+                            <Input id="price" name="price" type="number" min="0" step="0.01" value={formData.price} onChange={handleChange} className="col-span-3" required />
                         </div>
                     </div>
                     <DialogFooter>
@@ -270,3 +306,5 @@ function ItemEditDialog({ isOpen, onOpenChange, onSave, item }: ItemEditDialogPr
         </Dialog>
     )
 }
+
+    
