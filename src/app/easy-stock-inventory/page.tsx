@@ -468,7 +468,7 @@ export default function EasyStockInventoryPage() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center h-24">
-                        No items match your criteria.
+                        No items found.
                       </TableCell>
                     </TableRow>
                   )}
@@ -839,21 +839,23 @@ function ImportCSVDialog({ isOpen, onOpenChange, onImport }: ImportCSVDialogProp
                 {previewData.length > 0 && (
                     <div className="mt-4">
                         <h4 className="font-semibold text-sm mb-2">CSV Preview (first 5 rows)</h4>
-                        <div className="max-h-40 overflow-auto rounded-md border">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        {Object.keys(previewData[0]).map(key => <TableHead key={key}>{key}</TableHead>)}
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {previewData.map((row, i) => (
-                                        <TableRow key={i}>
-                                            {Object.values(row).map((val: any, j) => <TableCell key={j}>{String(val)}</TableCell>)}
+                        <div className="max-h-60 overflow-y-auto rounded-md border">
+                           <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            {Object.keys(previewData[0]).map(key => <TableHead key={key}>{key}</TableHead>)}
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {previewData.map((row, i) => (
+                                            <TableRow key={i}>
+                                                {Object.values(row).map((val: any, j) => <TableCell key={j}>{String(val)}</TableCell>)}
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -867,5 +869,3 @@ function ImportCSVDialog({ isOpen, onOpenChange, onImport }: ImportCSVDialogProp
         </Dialog>
     )
 }
-
-    
