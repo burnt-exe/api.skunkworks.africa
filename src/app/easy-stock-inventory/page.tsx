@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Edit, Trash2, ScanLine, Plus, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, ScanLine, Plus, MoreHorizontal, Boxes } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -32,6 +33,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Label } from '@/components/ui/label';
@@ -71,6 +73,8 @@ export default function EasyStockInventoryPage() {
   const [editingItem, setEditingItem] = useState<StockItem | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
+  const [isRestockOpen, setIsRestockOpen] = useState(false);
+  const [restockingItem, setRestockingItem] = useState<StockItem | null>(null);
 
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,7 +134,10 @@ export default function EasyStockInventoryPage() {
         if (item.id === id) {
           const parsedValue = typeof value === 'string' && field !== 'name' && field !== 'sku' ? parseFloat(value) || 0 : value;
           const updatedItem = { ...item, [field]: parsedValue };
-          return { ...updatedItem, status: getStatus(updatedItem.quantity) };
+          if(field === 'quantity') {
+             return { ...updatedItem, status: getStatus(updatedItem.quantity) };
+          }
+          return updatedItem;
         }
         return item;
       })
@@ -179,18 +186,45 @@ export default function EasyStockInventoryPage() {
     setStockItems(prev => prev.map(item => {
         if (selectedIds.has(item.id)) {
             const newQuantity = updates.quantity ?? item.quantity;
-            const newStatus = updates.status ?? getStatus(newQuantity);
+            let newStatus = updates.status;
+            // if quantity is updated, it takes precedence for status calculation
+            if(updates.quantity !== undefined) {
+                newStatus = getStatus(newQuantity);
+            }
+
             return {
                 ...item,
                 quantity: newQuantity,
                 price: updates.price ?? item.price,
-                status: newStatus,
+                status: newStatus ?? item.status,
             };
         }
         return item;
     }));
     setIsBulkEditOpen(false);
     setSelectedIds(new Set());
+  };
+
+  const handleMarkOutOfStock = (id: string) => {
+      handleItemChange(id, 'quantity', 0);
+  }
+
+  const handleOpenRestockDialog = (item: StockItem) => {
+    setRestockingItem(item);
+    setIsRestockOpen(true);
+  }
+  
+  const handleRestock = (itemId: string, quantityToAdd: number) => {
+    setStockItems(prev =>
+      prev.map(item => {
+        if (item.id === itemId) {
+          const newQuantity = item.quantity + quantityToAdd;
+          return { ...item, quantity: newQuantity, status: getStatus(newQuantity) };
+        }
+        return item;
+      })
+    );
+    setIsRestockOpen(false);
   };
 
 
@@ -319,6 +353,7 @@ export default function EasyStockInventoryPage() {
                           value={item.quantity}
                           onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)}
                           className="w-full text-right"
+                          onBlur={(e) => handleItemChange(item.id, 'quantity', Math.max(0, parseInt(e.target.value, 10) || 0))}
                         />
                       </TableCell>
                       <TableCell className="text-right">
@@ -328,34 +363,51 @@ export default function EasyStockInventoryPage() {
                           onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}
                           className="w-full text-right"
                           step="0.01"
+                           onBlur={(e) => handleItemChange(item.id, 'price', parseFloat(e.target.value).toFixed(2))}
                         />
                       </TableCell>
                       <TableCell className="text-center">
                         <Badge variant={getStatusVariant(item.status)}>{item.status}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEditItem(item)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                              <Trash2 className="h-4 w-4" />
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the item "{item.name}".
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDeleteItem(item.id)}>Delete</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onSelect={() => handleEditItem(item)}>
+                               <Edit className="mr-2 h-4 w-4" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleOpenRestockDialog(item)}>
+                               <Boxes className="mr-2 h-4 w-4" /> Restock
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleMarkOutOfStock(item.id)}>
+                               <Badge variant="destructive" className="mr-2">0</Badge> Mark as Out of Stock
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                             <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete the item "{item.name}".
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteItem(item.id)}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))
@@ -394,6 +446,12 @@ export default function EasyStockInventoryPage() {
         onOpenChange={setIsBulkEditOpen}
         onSave={handleBulkUpdate}
         itemCount={selectedIds.size}
+      />
+       <RestockDialog
+        isOpen={isRestockOpen}
+        onOpenChange={setIsRestockOpen}
+        onRestock={handleRestock}
+        item={restockingItem}
       />
       <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
         <DialogContent className="max-w-md">
@@ -492,11 +550,18 @@ function BulkEditDialog({ isOpen, onOpenChange, onSave, itemCount }: BulkEditDia
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const finalUpdates = {
-            quantity: updates.quantity !== undefined && updates.quantity !== '' ? parseFloat(updates.quantity) : undefined,
-            price: updates.price !== undefined && updates.price !== '' ? parseFloat(updates.price) : undefined,
-            status: updates.status
-        };
+        const finalUpdates: { quantity?: number; price?: number; status?: StockItemStatus } = {};
+
+        if (updates.quantity !== undefined && updates.quantity.trim() !== '') {
+            finalUpdates.quantity = parseFloat(updates.quantity);
+        }
+        if (updates.price !== undefined && updates.price.trim() !== '') {
+            finalUpdates.price = parseFloat(updates.price);
+        }
+        if (updates.status) {
+            finalUpdates.status = updates.status;
+        }
+
         onSave(finalUpdates);
     };
 
@@ -534,12 +599,12 @@ function BulkEditDialog({ isOpen, onOpenChange, onSave, itemCount }: BulkEditDia
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="bulk-status">Status</Label>
-                            <Select
+                             <Select
                                 value={updates.status}
-                                onValueChange={(value: StockItemStatus) => setUpdates(prev => ({ ...prev, status: value }))}
+                                onValueChange={(value: StockItemStatus) => setUpdates(prev => ({ ...prev, status: value as StockItemStatus }))}
                             >
                                 <SelectTrigger id="bulk-status">
-                                    <SelectValue placeholder="Change status" />
+                                    <SelectValue placeholder="Change status (optional)" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="In Stock">In Stock</SelectItem>
@@ -547,7 +612,7 @@ function BulkEditDialog({ isOpen, onOpenChange, onSave, itemCount }: BulkEditDia
                                     <SelectItem value="Out of Stock">Out of Stock</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <p className="text-xs text-muted-foreground">Note: If quantity is also set, status will be recalculated.</p>
+                            <p className="text-xs text-muted-foreground">Note: If quantity is also set, status will be recalculated based on quantity.</p>
                         </div>
                     </div>
                     <DialogFooter>
@@ -560,4 +625,63 @@ function BulkEditDialog({ isOpen, onOpenChange, onSave, itemCount }: BulkEditDia
             </DialogContent>
         </Dialog>
     );
+}
+
+interface RestockDialogProps {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  onRestock: (itemId: string, quantityToAdd: number) => void;
+  item: StockItem | null;
+}
+
+function RestockDialog({ isOpen, onOpenChange, onRestock, item }: RestockDialogProps) {
+    const [quantityToAdd, setQuantityToAdd] = useState(0);
+
+    useEffect(() => {
+        if (isOpen) {
+            setQuantityToAdd(0);
+        }
+    }, [isOpen]);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (item && quantityToAdd > 0) {
+            onRestock(item.id, quantityToAdd);
+        }
+    };
+
+    if (!item) return null;
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-md">
+                <form onSubmit={handleSubmit}>
+                    <DialogHeader>
+                        <DialogTitle>Restock Item</DialogTitle>
+                        <DialogDescription>
+                           Current quantity for <strong>{item.name}</strong> is <strong>{item.quantity}</strong>. How many items are you adding?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Label htmlFor="restock-quantity">Quantity to Add</Label>
+                        <Input
+                            id="restock-quantity"
+                            type="number"
+                            min="1"
+                            value={quantityToAdd > 0 ? quantityToAdd : ''}
+                            onChange={(e) => setQuantityToAdd(parseInt(e.target.value, 10) || 0)}
+                            autoFocus
+                            required
+                        />
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button type="button" variant="secondary">Cancel</Button>
+                        </DialogClose>
+                        <Button type="submit" disabled={quantityToAdd <= 0}>Add to Stock</Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
 }
