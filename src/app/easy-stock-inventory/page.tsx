@@ -102,6 +102,19 @@ export default function EasyStockInventoryPage() {
     setEditingItem(null);
   };
   
+  const handleItemChange = (id: string, field: keyof StockItem, value: string | number) => {
+    setStockItems(prev =>
+      prev.map(item => {
+        if (item.id === id) {
+          const parsedValue = typeof value === 'string' && field !== 'name' && field !== 'sku' ? parseFloat(value) || 0 : value;
+          const updatedItem = { ...item, [field]: parsedValue };
+          return { ...updatedItem, status: getStatus(updatedItem.quantity) };
+        }
+        return item;
+      })
+    );
+  };
+  
   const handleBarcodeScanned = (result: string) => {
     const foundItem = stockItems.find(item => item.sku === result);
     setIsScannerOpen(false);
@@ -171,8 +184,8 @@ export default function EasyStockInventoryPage() {
                 <TableRow>
                   <TableHead>Item Name</TableHead>
                   <TableHead>SKU</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
+                  <TableHead className="w-[120px] text-right">Quantity</TableHead>
+                  <TableHead className="w-[150px] text-right">Price</TableHead>
                   <TableHead className="text-center">Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -183,8 +196,23 @@ export default function EasyStockInventoryPage() {
                     <TableRow key={item.id} onDoubleClick={() => handleEditItem(item)}>
                       <TableCell className="font-medium">{item.name}</TableCell>
                       <TableCell className="text-muted-foreground">{item.sku}</TableCell>
-                      <TableCell className="text-right">{item.quantity}</TableCell>
-                      <TableCell className="text-right">${item.price.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)}
+                          className="w-full text-right"
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Input
+                          type="number"
+                          value={item.price}
+                          onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}
+                          className="w-full text-right"
+                          step="0.01"
+                        />
+                      </TableCell>
                       <TableCell className="text-center">
                         <Badge variant={getStatusVariant(item.status)}>{item.status}</Badge>
                       </TableCell>
