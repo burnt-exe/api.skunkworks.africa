@@ -278,7 +278,7 @@ export default function EasyStockInventoryPage() {
 
   return (
     <>
-      <div className="space-y-8 pb-20 md:pb-0">
+      <div className="space-y-6 pb-20 md:pb-0">
         <div>
           <h1 className="text-2xl font-bold">EasyStock Inventory</h1>
           <p className="text-muted-foreground">
@@ -295,27 +295,27 @@ export default function EasyStockInventoryPage() {
                   placeholder="Search by name or SKU..."
                   value={searchTerm}
                   onChange={handleSearchChange}
-                  className="max-w-sm"
+                  className="w-full sm:w-auto sm:max-w-xs"
                 />
                 <Button variant="outline" onClick={() => setIsScannerOpen(true)}>
-                    <ScanLine className="mr-2" />
+                    <ScanLine className="mr-2 h-4 w-4" />
                     Scan
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline"><MoreHorizontal /></Button>
+                    <Button variant="outline"><MoreHorizontal className="h-4 w-4" /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                       <DropdownMenuItem onSelect={() => setIsImportOpen(true)}>
-                          <Upload className="mr-2" /> Import CSV
+                          <Upload className="mr-2 h-4 w-4" /> Import CSV
                       </DropdownMenuItem>
                       <DropdownMenuItem onSelect={handleExportCSV}>
-                          <Download className="mr-2" /> Export CSV
+                          <Download className="mr-2 h-4 w-4" /> Export CSV
                       </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <Button onClick={handleAddNewItem} className="hidden md:inline-flex">
-                  <PlusCircle className="mr-2" />
+                  <PlusCircle className="mr-2 h-4 w-4" />
                   Add New Item
                 </Button>
               </div>
@@ -326,6 +326,7 @@ export default function EasyStockInventoryPage() {
                         key={filter.value} 
                         variant={activeFilter === filter.value ? 'default' : 'outline'}
                         onClick={() => setActiveFilter(filter.value)}
+                        size="sm"
                     >
                         {filter.label}
                     </Button>
@@ -333,145 +334,147 @@ export default function EasyStockInventoryPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                   <TableHead className="w-[50px]">
-                      <Checkbox 
-                        checked={isAllSelected}
-                        onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
-                        aria-label="Select all"
-                      />
-                  </TableHead>
-                  <TableHead>Item Name</TableHead>
-                  <TableHead>SKU</TableHead>
-                  <TableHead className="w-[120px] text-right">Quantity</TableHead>
-                  <TableHead className="w-[150px] text-right">Price</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                  <TableHead className="text-right">
-                    {selectedIds.size > 0 ? (
-                        <DropdownMenu>
+            <div className="relative w-full overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50px] px-4">
+                        <Checkbox 
+                          checked={isAllSelected}
+                          onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
+                          aria-label="Select all"
+                        />
+                    </TableHead>
+                    <TableHead>Item Name</TableHead>
+                    <TableHead>SKU</TableHead>
+                    <TableHead className="w-[120px] text-right">Quantity</TableHead>
+                    <TableHead className="w-[150px] text-right">Price</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="text-right">
+                      {selectedIds.size > 0 ? (
+                          <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onSelect={() => setIsBulkEditOpen(true)}>
+                                      <Edit className="mr-2 h-4 w-4" /> Bulk Edit
+                                  </DropdownMenuItem>
+                                  <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                              <Trash2 className="mr-2 h-4 w-4" /> Delete Selected
+                                          </DropdownMenuItem>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                              This will permanently delete {selectedIds.size} selected item(s). This action cannot be undone.
+                                          </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction onClick={handleBulkDelete}>Delete</AlertDialogAction>
+                                          </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                  </AlertDialog>
+
+                              </DropdownMenuContent>
+                          </DropdownMenu>
+                      ) : 'Actions'}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredStock.length > 0 ? (
+                    filteredStock.map((item) => (
+                      <TableRow key={item.id} onDoubleClick={() => handleEditItem(item)} data-state={selectedIds.has(item.id) && "selected"}>
+                        <TableCell className="px-4">
+                            <Checkbox
+                              checked={selectedIds.has(item.id)}
+                              onCheckedChange={(checked) => handleSelect(item.id, Boolean(checked))}
+                              aria-label={`Select ${item.name}`}
+                            />
+                        </TableCell>
+                        <TableCell className="font-medium">{item.name}</TableCell>
+                        <TableCell className="text-muted-foreground">{item.sku}</TableCell>
+                        <TableCell className="text-right">
+                          <Input
+                            type="number"
+                            value={item.quantity}
+                            onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)}
+                            className="w-full min-w-[80px] text-right"
+                            onBlur={(e) => handleItemChange(item.id, 'quantity', Math.max(0, parseInt(e.target.value, 10) || 0))}
+                          />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Input
+                            type="number"
+                            value={item.price}
+                            onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}
+                            className="w-full min-w-[100px] text-right"
+                            step="0.01"
+                            onBlur={(e) => handleItemChange(item.id, 'price', parseFloat(e.target.value).toFixed(2))}
+                          />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant={getStatusVariant(item.status)}>{item.status}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onSelect={() => setIsBulkEditOpen(true)}>
-                                    <Edit className="mr-2 h-4 w-4" /> Bulk Edit
-                                </DropdownMenuItem>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
-                                            <Trash2 className="mr-2 h-4 w-4" /> Delete Selected
-                                        </DropdownMenuItem>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This will permanently delete {selectedIds.size} selected item(s). This action cannot be undone.
-                                        </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleBulkDelete}>Delete</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-
+                              <DropdownMenuItem onSelect={() => handleEditItem(item)}>
+                                <Edit className="mr-2 h-4 w-4" /> Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => handleOpenRestockDialog(item)}>
+                                <Boxes className="mr-2 h-4 w-4" /> Restock
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => handleMarkOutOfStock(item.id)}>
+                                <Badge variant="destructive" className="mr-2">0</Badge> Mark as Out of Stock
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                  </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This action cannot be undone. This will permanently delete the item "{item.name}".
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteItem(item.id)}>Delete</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </DropdownMenuContent>
-                        </DropdownMenu>
-                    ) : 'Actions'}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStock.length > 0 ? (
-                  filteredStock.map((item) => (
-                    <TableRow key={item.id} onDoubleClick={() => handleEditItem(item)} data-state={selectedIds.has(item.id) && "selected"}>
-                      <TableCell>
-                          <Checkbox
-                            checked={selectedIds.has(item.id)}
-                            onCheckedChange={(checked) => handleSelect(item.id, Boolean(checked))}
-                            aria-label={`Select ${item.name}`}
-                          />
-                      </TableCell>
-                      <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{item.sku}</TableCell>
-                      <TableCell className="text-right">
-                        <Input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)}
-                          className="w-full text-right"
-                          onBlur={(e) => handleItemChange(item.id, 'quantity', Math.max(0, parseInt(e.target.value, 10) || 0))}
-                        />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Input
-                          type="number"
-                          value={item.price}
-                          onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}
-                          className="w-full text-right"
-                          step="0.01"
-                           onBlur={(e) => handleItemChange(item.id, 'price', parseFloat(e.target.value).toFixed(2))}
-                        />
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant={getStatusVariant(item.status)}>{item.status}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => handleEditItem(item)}>
-                               <Edit className="mr-2 h-4 w-4" /> Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handleOpenRestockDialog(item)}>
-                               <Boxes className="mr-2 h-4 w-4" /> Restock
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handleMarkOutOfStock(item.id)}>
-                               <Badge variant="destructive" className="mr-2">0</Badge> Mark as Out of Stock
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                             <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
-                                  <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                </DropdownMenuItem>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the item "{item.name}".
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleDeleteItem(item.id)}>Delete</AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center h-24">
+                        No items match your criteria.
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center h-24">
-                      No items match your criteria.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -506,7 +509,7 @@ export default function EasyStockInventoryPage() {
         item={restockingItem}
       />
       <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md w-full">
             <DialogHeader>
                 <DialogTitle>Scan Barcode</DialogTitle>
                 <DialogDescription>Point your camera at a barcode to find the item.</DialogDescription>
@@ -551,7 +554,7 @@ function ItemEditDialog({ isOpen, onOpenChange, onSave, item }: ItemEditDialogPr
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-md">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>{item ? 'Edit Item' : 'Add New Item'}</DialogTitle>
@@ -624,7 +627,7 @@ function BulkEditDialog({ isOpen, onOpenChange, onSave, itemCount }: BulkEditDia
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>Bulk Edit {itemCount} Item(s)</DialogTitle>
@@ -805,7 +808,7 @@ function ImportCSVDialog({ isOpen, onOpenChange, onImport }: ImportCSVDialogProp
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-lg w-full">
                 <DialogHeader>
                     <DialogTitle>Import from CSV</DialogTitle>
                     <DialogDescription>
