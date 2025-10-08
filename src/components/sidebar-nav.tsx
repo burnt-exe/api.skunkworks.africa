@@ -3,7 +3,7 @@
 
 import { usePathname } from 'next/navigation';
 import { SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from './ui/sidebar';
-import { FileText, Receipt, ShoppingCart, Users, Send, Briefcase, FileSignature, Package, Home } from 'lucide-react';
+import { FileText, Receipt, ShoppingCart, Users, Send, Briefcase, FileSignature, Package, Home, ScanLine } from 'lucide-react';
 import Link from 'next/link';
 
 const navItems = [

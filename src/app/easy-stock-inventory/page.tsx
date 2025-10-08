@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, ScanLine } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -19,6 +19,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { BarcodeScanner } from '@/components/barcode-scanner';
 
 type StockItemStatus = 'In Stock' | 'Low Stock' | 'Out of Stock';
 
@@ -51,7 +52,8 @@ const emptyItem: Omit<StockItem, 'id' | 'status'> = { name: '', sku: '', quantit
 export default function EasyStockInventoryPage() {
   const [stockItems, setStockItems] = useState<StockItem[]>(initialStock);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<StockItem | null>(null);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,12 +78,12 @@ export default function EasyStockInventoryPage() {
 
   const handleAddNewItem = () => {
     setEditingItem(null);
-    setIsDialogOpen(true);
+    setIsItemDialogOpen(true);
   };
 
   const handleEditItem = (item: StockItem) => {
     setEditingItem(item);
-    setIsDialogOpen(true);
+    setIsItemDialogOpen(true);
   };
 
   const handleDeleteItem = (id: string) => {
@@ -101,9 +103,19 @@ export default function EasyStockInventoryPage() {
         { ...itemData, id: String(Date.now()), status: getStatus(itemData.quantity) }
       ]);
     }
-    setIsDialogOpen(false);
+    setIsItemDialogOpen(false);
     setEditingItem(null);
   };
+  
+  const handleBarcodeScanned = (result: string) => {
+    const foundItem = stockItems.find(item => item.sku === result);
+    setIsScannerOpen(false);
+    if (foundItem) {
+        handleEditItem(foundItem);
+    } else {
+        alert(`SKU "${result}" not found in inventory.`);
+    }
+  }
 
   return (
     <>
@@ -119,13 +131,17 @@ export default function EasyStockInventoryPage() {
           <CardHeader>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <CardTitle>Inventory List</CardTitle>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Input
                   placeholder="Search by name or SKU..."
                   value={searchTerm}
                   onChange={handleSearchChange}
                   className="max-w-sm"
                 />
+                <Button onClick={() => setIsScannerOpen(true)}>
+                    <ScanLine className="mr-2" />
+                    Scan Barcode
+                </Button>
                 <Button onClick={handleAddNewItem}>
                   <PlusCircle className="mr-2" />
                   Add New Item
@@ -171,11 +187,20 @@ export default function EasyStockInventoryPage() {
         </Card>
       </div>
       <ItemEditDialog 
-        isOpen={isDialogOpen} 
-        onOpenChange={setIsDialogOpen} 
+        isOpen={isItemDialogOpen} 
+        onOpenChange={setIsItemDialogOpen} 
         onSave={handleSaveItem} 
         item={editingItem}
       />
+      <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+        <DialogContent className="max-w-md">
+            <DialogHeader>
+                <DialogTitle>Scan Barcode</DialogTitle>
+                <DialogDescription>Point your camera at a barcode to find the item.</DialogDescription>
+            </DialogHeader>
+            <BarcodeScanner onResult={handleBarcodeScanned} />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
