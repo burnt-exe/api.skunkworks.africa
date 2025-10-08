@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,8 +12,9 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import DocumentPreview from '@/components/document-preview';
-import { PlusCircle, Trash2, Printer, Download, Upload } from 'lucide-react';
+import { PlusCircle, Trash2, Printer, Download, Upload, ChevronDown } from 'lucide-react';
 import React from 'react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const initialData: DocumentData = {
   title: 'PAYSLIP',
@@ -241,5 +243,3 @@ export default function PayslipPage() {
     </div>
   );
 }
-
-    

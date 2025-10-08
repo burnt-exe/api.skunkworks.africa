@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
@@ -13,8 +14,9 @@ import { Textarea } from '@/components/ui/textarea';
 import DocumentPreview from '@/components/document-preview';
 import { suggestItemsAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Sparkles, Trash2, LoaderCircle, Printer, Download, Upload } from 'lucide-react';
+import { PlusCircle, Sparkles, Trash2, LoaderCircle, Printer, Download, Upload, ChevronDown } from 'lucide-react';
 import React from 'react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const initialData: DocumentData = {
   title: 'PURCHASE ORDER',
@@ -133,40 +135,47 @@ export default function PurchaseOrderPage() {
           <p className="text-muted-foreground">Fill in the details to generate your PO.</p>
           <Separator className="my-6" />
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>AI Assistant</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <Label htmlFor="businessType">Business Type</Label>
-                    <Input
-                      id="businessType"
-                      value={aiState.businessType}
-                      onChange={(e) => setAiState({ ...aiState, businessType: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="vatRateAi">VAT Rate (%)</Label>
-                    <Input
-                      id="vatRateAi"
-                      type="number"
-                      value={aiState.vatRate}
-                      onChange={(e) => setAiState({ ...aiState, vatRate: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <Button onClick={handleAiSuggest} disabled={isPending}>
-                  {isPending ? (
-                    <LoaderCircle className="animate-spin" />
-                  ) : (
-                    <Sparkles className="mr-2" />
-                  )}
-                  Suggest Items
-                </Button>
-              </CardContent>
-            </Card>
+            <Collapsible asChild>
+              <Card>
+                <CollapsibleTrigger className="w-full">
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>AI Assistant</CardTitle>
+                    <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <Label htmlFor="businessType">Business Type</Label>
+                        <Input
+                          id="businessType"
+                          value={aiState.businessType}
+                          onChange={(e) => setAiState({ ...aiState, businessType: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="vatRateAi">VAT Rate (%)</Label>
+                        <Input
+                          id="vatRateAi"
+                          type="number"
+                          value={aiState.vatRate}
+                          onChange={(e) => setAiState({ ...aiState, vatRate: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <Button onClick={handleAiSuggest} disabled={isPending}>
+                      {isPending ? (
+                        <LoaderCircle className="animate-spin" />
+                      ) : (
+                        <Sparkles className="mr-2" />
+                      )}
+                      Suggest Items
+                    </Button>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
@@ -292,29 +301,36 @@ export default function PurchaseOrderPage() {
               </Button>
             </div>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>Payment Details</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="paymentDetails.bankName">Bank Name</Label>
-                  <Input id="paymentDetails.bankName" name="paymentDetails.bankName" value={data.paymentDetails?.bankName} onChange={handleInputChange} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="paymentDetails.accountName">Account Name</Label>
-                  <Input id="paymentDetails.accountName" name="paymentDetails.accountName" value={data.paymentDetails?.accountName} onChange={handleInputChange} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="paymentDetails.accountNumber">Account Number</Label>
-                  <Input id="paymentDetails.accountNumber" name="paymentDetails.accountNumber" value={data.paymentDetails?.accountNumber} onChange={handleInputChange} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="paymentDetails.sortCode">Sort Code / BIC</Label>
-                  <Input id="paymentDetails.sortCode" name="paymentDetails.sortCode" value={data.paymentDetails?.sortCode} onChange={handleInputChange} />
-                </div>
-              </CardContent>
-            </Card>
+            <Collapsible asChild>
+              <Card>
+                <CollapsibleTrigger className="w-full">
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Payment Details</CardTitle>
+                    <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="paymentDetails.bankName">Bank Name</Label>
+                      <Input id="paymentDetails.bankName" name="paymentDetails.bankName" value={data.paymentDetails?.bankName} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="paymentDetails.accountName">Account Name</Label>
+                      <Input id="paymentDetails.accountName" name="paymentDetails.accountName" value={data.paymentDetails?.accountName} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="paymentDetails.accountNumber">Account Number</Label>
+                      <Input id="paymentDetails.accountNumber" name="paymentDetails.accountNumber" value={data.paymentDetails?.accountNumber} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="paymentDetails.sortCode">Sort Code / BIC</Label>
+                      <Input id="paymentDetails.sortCode" name="paymentDetails.sortCode" value={data.paymentDetails?.sortCode} onChange={handleInputChange} />
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
 
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
@@ -350,5 +366,3 @@ export default function PurchaseOrderPage() {
     </div>
   );
 }
-
-    
