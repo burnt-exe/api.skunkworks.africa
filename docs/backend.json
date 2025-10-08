@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "PurchaseOrder": {
@@ -55,54 +56,103 @@
       "type": "object",
       "description": "Represents an invoice document.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the invoice."
+        "title": {
+          "type": "string"
         },
-        "customerId": {
-          "type": "string",
-          "description": "Reference to the Customer. (Relationship: Customer 1:N Invoice)"
+        "logoUrl": {
+          "type": "string"
         },
-        "companyId": {
-          "type": "string",
-          "description": "Reference to the Company issuing the invoice. (Relationship: Company 1:N Invoice)"
+        "from": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            }
+          }
         },
-        "invoiceDate": {
+        "to": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            }
+          }
+        },
+        "details": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        "date": {
           "type": "string",
-          "description": "Date the invoice was created.",
-          "format": "date-time"
+          "format": "date"
         },
         "dueDate": {
           "type": "string",
-          "description": "Date the invoice is due.",
-          "format": "date-time"
+          "format": "date"
         },
-        "items": {
+        "lineItems": {
           "type": "array",
-          "description": "List of items in the invoice. Each item should include details like description, quantity, and price.",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "number"
+              },
+              "price": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "notes": {
+          "type": "string"
+        },
+        "vatRate": {
+          "type": "number"
+        },
+        "paymentDetails": {
+          "type": "object",
+          "properties": {
+            "bankName": {
+              "type": "string"
+            },
+            "accountName": {
+              "type": "string"
+            },
+            "accountNumber": {
+              "type": "string"
+            },
+            "sortCode": {
+              "type": "string"
+            }
           }
         },
         "totalAmount": {
-          "type": "number",
-          "description": "Total amount of the invoice."
+          "type": "number"
         },
         "status": {
-          "type": "string",
-          "description": "Status of the invoice (e.g., sent, paid, overdue)."
+          "type": "string"
+        },
+        "companyId": {
+          "type": "string"
         }
-      },
-      "required": [
-        "id",
-        "customerId",
-        "companyId",
-        "invoiceDate",
-        "dueDate",
-        "items",
-        "totalAmount",
-        "status"
-      ]
+      }
     },
     "Receipt": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -507,6 +557,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to manage documents related to a company's operations, including purchase orders, invoices, receipts, payslips, and sales orders. The structure prioritizes authorization independence and simplifies security rules by denormalizing authorization data. Each document type is stored in a separate collection nested under the `companies/{companyId}` path, ensuring data segregation and a consistent security posture within each collection. This design allows for granular access control at the company level and avoids complex hierarchical authorization dependencies. The structure enables secure list operations (QAPs) through path-based ownership and eliminates the need for filtering in rules.\n\nAuthorization Independence is achieved by storing all documents related to a company under the `companies/{companyId}` path. This eliminates the need to `get()` parent document data to determine access rights for subcollections. For example, to secure access to purchase orders, the `companyId` is included directly within each purchase order document, allowing security rules to directly verify if the user has access to the specific company without needing to retrieve the company document itself.\n\nThe structure also supports QAPs by ensuring that each collection has a homogeneous security posture. For example, all documents in the `/companies/{companyId}/purchaseOrders` collection have the same security requirements: users must have access to the company to be able to create, read, update, or delete documents in the collection."
+    "reasoning": "The Firestore structure is designed to manage documents related to a company's operations, including purchase orders, invoices, receipts, payslips, and sales orders. The structure prioritizes authorization independence and simplifies security rules by denormalizing authorization data. Each document type is stored in a separate collection nested under the `companies/{companyId}` path, ensuring data segregation and a consistent security posture within each collection. This design allows for granular access control at the company level and avoids complex hierarchical authorization dependencies. The structure enables secure list operations (QAPs) through path-based ownership and eliminates the need for filtering in rules.\n\nAuthorization Independence is achieved by storing all documents related to a company under the `companies/{companyId}` path. This eliminates the need to `get()` parent document data to determine access rights for subcollections. For example, to secure access to purchase orders, the `companyId` is included directly within each purchase order document, allowing security rules to directly verify if the user has access to the specific company without needing to retrieve the company document itself.\n\nThe structure also supports QAPs by ensuring that each collection has a homogeneous security posture. For example, all documents in the `/companies/{companyId}/purchaseOrders` collection have a single security posture where a user must have access to the company to be able to create, read, update, or delete any document in the collection."
   }
 }

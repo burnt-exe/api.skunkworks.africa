@@ -6,6 +6,7 @@ import './print.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/sidebar-nav';
+import { FirebaseClientProvider } from '@/firebase';
 
 export default function RootLayout({
   children,
@@ -23,16 +24,18 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <SidebarProvider>
-          <Sidebar>
-            <SidebarNav />
-          </Sidebar>
-          <SidebarInset>
-            <main className="p-4 sm:p-6 lg:p-8">
-                {children}
-            </main>
-          </SidebarInset>
-        </SidebarProvider>
+        <FirebaseClientProvider>
+          <SidebarProvider>
+            <Sidebar>
+              <SidebarNav />
+            </Sidebar>
+            <SidebarInset>
+              <main className="p-4 sm:p-6 lg:p-8">
+                  {children}
+              </main>
+            </SidebarInset>
+          </SidebarProvider>
+        </FirebaseClientProvider>
         <Toaster />
       </body>
     </html>

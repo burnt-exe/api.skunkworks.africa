@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition, useEffect, useMemo } from 'react';
 import type { DocumentData, LineItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,9 +14,11 @@ import { Textarea } from '@/components/ui/textarea';
 import DocumentPreview from '@/components/document-preview';
 import { suggestItemsAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Sparkles, Trash2, LoaderCircle, Printer, Download, Upload, ChevronDown } from 'lucide-react';
+import { PlusCircle, Sparkles, Trash2, LoaderCircle, Printer, Download, Upload, ChevronDown, Save } from 'lucide-react';
 import React from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useFirestore, useUser, initiateAnonymousSignIn, addDocumentNonBlocking } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 const initialData: DocumentData = {
   title: 'INVOICE',
@@ -45,6 +47,8 @@ const initialData: DocumentData = {
 
 export default function InvoicePage() {
   const [data, setData] = useState<DocumentData>(initialData);
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
 
   useEffect(() => {
     setData((prev) => ({
@@ -126,6 +130,37 @@ export default function InvoicePage() {
           variant: 'destructive',
         });
       }
+    });
+  };
+
+  const subtotal = useMemo(() => data.lineItems.reduce((acc, item) => acc + item.quantity * item.price, 0), [data.lineItems]);
+  const vatAmount = useMemo(() => subtotal * ((data.vatRate ?? 0) / 100), [subtotal, data.vatRate]);
+  const totalAmount = useMemo(() => subtotal + vatAmount, [subtotal, vatAmount]);
+
+
+  const handleSaveInvoice = () => {
+    if (!user) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to save an invoice.',
+        variant: 'destructive',
+      });
+      return;
+    }
+  
+    const invoiceDataForDb = {
+      ...data,
+      totalAmount,
+      status: 'draft', // Add a default status
+      companyId: user.uid, // Use user's UID as companyId
+    };
+  
+    const invoicesCollection = collection(firestore, 'companies', user.uid, 'invoices');
+    addDocumentNonBlocking(invoicesCollection, invoiceDataForDb);
+  
+    toast({
+      title: 'Success',
+      description: 'Invoice saved successfully!',
     });
   };
 
@@ -356,7 +391,7 @@ export default function InvoicePage() {
                 <CardHeader>
                     <CardTitle>Actions</CardTitle>
                 </CardHeader>
-                <CardContent className="flex items-center gap-2">
+                <CardContent className="flex flex-wrap items-center gap-2">
                     <Button onClick={() => window.print()}>
                         <Printer className="mr-2"/>
                         Print / PDF
@@ -368,6 +403,10 @@ export default function InvoicePage() {
                      <Button variant="outline" disabled>
                         <Download className="mr-2" />
                         Excel
+                    </Button>
+                    <Button onClick={handleSaveInvoice} disabled={isUserLoading}>
+                      {isUserLoading ? <LoaderCircle className="animate-spin" /> : <Save className="mr-2" />}
+                      Save Invoice
                     </Button>
                 </CardContent>
             </Card>
