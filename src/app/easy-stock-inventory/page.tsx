@@ -1,12 +1,11 @@
-
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Edit, Trash2, ScanLine, Plus } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, ScanLine, Plus, MoreHorizontal } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -18,9 +17,29 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Label } from '@/components/ui/label';
 import { BarcodeScanner } from '@/components/barcode-scanner';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 type StockItemStatus = 'In Stock' | 'Low Stock' | 'Out of Stock';
 type FilterStatus = StockItemStatus | 'All';
@@ -50,17 +69,20 @@ export default function EasyStockInventoryPage() {
   const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<StockItem | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
+
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
-  const filteredStock = stockItems.filter(item => {
+  const filteredStock = useMemo(() => stockItems.filter(item => {
       const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             item.sku.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesFilter = activeFilter === 'All' || item.status === activeFilter;
       return matchesSearch && matchesFilter;
-  });
+  }), [stockItems, searchTerm, activeFilter]);
 
   const getStatusVariant = (status: StockItem['status']) => {
     switch (status) {
@@ -128,12 +150,58 @@ export default function EasyStockInventoryPage() {
     }
   }
 
+  const handleSelect = (id: string, checked: boolean) => {
+    setSelectedIds(prev => {
+        const newSet = new Set(prev);
+        if (checked) {
+            newSet.add(id);
+        } else {
+            newSet.delete(id);
+        }
+        return newSet;
+    });
+  }
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+        setSelectedIds(new Set(filteredStock.map(item => item.id)));
+    } else {
+        setSelectedIds(new Set());
+    }
+  }
+  
+  const handleBulkDelete = () => {
+    setStockItems(prev => prev.filter(item => !selectedIds.has(item.id)));
+    setSelectedIds(new Set());
+  }
+  
+  const handleBulkUpdate = (updates: { quantity?: number; price?: number; status?: StockItemStatus }) => {
+    setStockItems(prev => prev.map(item => {
+        if (selectedIds.has(item.id)) {
+            const newQuantity = updates.quantity ?? item.quantity;
+            const newStatus = updates.status ?? getStatus(newQuantity);
+            return {
+                ...item,
+                quantity: newQuantity,
+                price: updates.price ?? item.price,
+                status: newStatus,
+            };
+        }
+        return item;
+    }));
+    setIsBulkEditOpen(false);
+    setSelectedIds(new Set());
+  };
+
+
   const filterButtons: { label: string, value: FilterStatus }[] = [
       { label: 'All', value: 'All'},
       { label: 'In Stock', value: 'In Stock'},
       { label: 'Low Stock', value: 'Low Stock'},
       { label: 'Out of Stock', value: 'Out of Stock'},
   ]
+
+  const isAllSelected = filteredStock.length > 0 && selectedIds.size === filteredStock.length;
 
   return (
     <>
@@ -182,18 +250,67 @@ export default function EasyStockInventoryPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                   <TableHead className="w-[50px]">
+                      <Checkbox 
+                        checked={isAllSelected}
+                        onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
+                        aria-label="Select all"
+                      />
+                  </TableHead>
                   <TableHead>Item Name</TableHead>
                   <TableHead>SKU</TableHead>
                   <TableHead className="w-[120px] text-right">Quantity</TableHead>
                   <TableHead className="w-[150px] text-right">Price</TableHead>
                   <TableHead className="text-center">Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right">
+                    {selectedIds.size > 0 ? (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onSelect={() => setIsBulkEditOpen(true)}>
+                                    <Edit className="mr-2 h-4 w-4" /> Bulk Edit
+                                </DropdownMenuItem>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                            <Trash2 className="mr-2 h-4 w-4" /> Delete Selected
+                                        </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This will permanently delete {selectedIds.size} selected item(s). This action cannot be undone.
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={handleBulkDelete}>Delete</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    ) : 'Actions'}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredStock.length > 0 ? (
                   filteredStock.map((item) => (
-                    <TableRow key={item.id} onDoubleClick={() => handleEditItem(item)}>
+                    <TableRow key={item.id} onDoubleClick={() => handleEditItem(item)} data-state={selectedIds.has(item.id) && "selected"}>
+                      <TableCell>
+                          <Checkbox
+                            checked={selectedIds.has(item.id)}
+                            onCheckedChange={(checked) => handleSelect(item.id, Boolean(checked))}
+                            aria-label={`Select ${item.name}`}
+                          />
+                      </TableCell>
                       <TableCell className="font-medium">{item.name}</TableCell>
                       <TableCell className="text-muted-foreground">{item.sku}</TableCell>
                       <TableCell className="text-right">
@@ -220,15 +337,31 @@ export default function EasyStockInventoryPage() {
                         <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEditItem(item)}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteItem(item.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the item "{item.name}".
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteItem(item.id)}>Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24">
+                    <TableCell colSpan={7} className="text-center h-24">
                       No items match your criteria.
                     </TableCell>
                   </TableRow>
@@ -255,6 +388,12 @@ export default function EasyStockInventoryPage() {
         onOpenChange={setIsItemDialogOpen} 
         onSave={handleSaveItem} 
         item={editingItem}
+      />
+      <BulkEditDialog
+        isOpen={isBulkEditOpen}
+        onOpenChange={setIsBulkEditOpen}
+        onSave={handleBulkUpdate}
+        itemCount={selectedIds.size}
       />
       <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
         <DialogContent className="max-w-md">
@@ -335,4 +474,90 @@ function ItemEditDialog({ isOpen, onOpenChange, onSave, item }: ItemEditDialogPr
     )
 }
 
-    
+interface BulkEditDialogProps {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  onSave: (updates: { quantity?: number; price?: number; status?: StockItemStatus }) => void;
+  itemCount: number;
+}
+
+function BulkEditDialog({ isOpen, onOpenChange, onSave, itemCount }: BulkEditDialogProps) {
+    const [updates, setUpdates] = useState<{ quantity?: string; price?: string; status?: StockItemStatus }>({});
+
+    useEffect(() => {
+        if (isOpen) {
+            setUpdates({});
+        }
+    }, [isOpen]);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const finalUpdates = {
+            quantity: updates.quantity !== undefined && updates.quantity !== '' ? parseFloat(updates.quantity) : undefined,
+            price: updates.price !== undefined && updates.price !== '' ? parseFloat(updates.price) : undefined,
+            status: updates.status
+        };
+        onSave(finalUpdates);
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <form onSubmit={handleSubmit}>
+                    <DialogHeader>
+                        <DialogTitle>Bulk Edit {itemCount} Item(s)</DialogTitle>
+                        <DialogDescription>
+                            Only fill the fields you want to update. Unchanged fields will be ignored.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="bulk-quantity">Quantity</Label>
+                            <Input
+                                id="bulk-quantity"
+                                type="number"
+                                placeholder="Set new quantity"
+                                value={updates.quantity ?? ''}
+                                onChange={(e) => setUpdates(prev => ({ ...prev, quantity: e.target.value }))}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="bulk-price">Price</Label>
+                            <Input
+                                id="bulk-price"
+                                type="number"
+                                placeholder="Set new price"
+                                step="0.01"
+                                value={updates.price ?? ''}
+                                onChange={(e) => setUpdates(prev => ({ ...prev, price: e.target.value }))}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="bulk-status">Status</Label>
+                            <Select
+                                value={updates.status}
+                                onValueChange={(value: StockItemStatus) => setUpdates(prev => ({ ...prev, status: value }))}
+                            >
+                                <SelectTrigger id="bulk-status">
+                                    <SelectValue placeholder="Change status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="In Stock">In Stock</SelectItem>
+                                    <SelectItem value="Low Stock">Low Stock</SelectItem>
+                                    <SelectItem value="Out of Stock">Out of Stock</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">Note: If quantity is also set, status will be recalculated.</p>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button type="button" variant="secondary">Cancel</Button>
+                        </DialogClose>
+                        <Button type="submit">Update Items</Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
