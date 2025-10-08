@@ -38,19 +38,11 @@ const getStatus = (quantity: number): StockItemStatus => {
     return 'In Stock';
 };
 
-const initialStock: StockItem[] = [
-  { id: '1', name: 'Laptop Pro', sku: 'LP-001', quantity: 25, price: 1200, status: 'In Stock' },
-  { id: '2', name: 'Wireless Mouse', sku: 'WM-002', quantity: 8, price: 25, status: 'Low Stock' },
-  { id: '3', name: 'Keyboard', sku: 'KB-003', quantity: 50, price: 75, status: 'In Stock' },
-  { id: '4', name: 'Webcam HD', sku: 'WC-004', quantity: 0, price: 80, status: 'Out of Stock' },
-  { id: '5', name: 'USB-C Hub', sku: 'HUB-005', quantity: 30, price: 45, status: 'In Stock' },
-];
-
 const emptyItem: Omit<StockItem, 'id' | 'status'> = { name: '', sku: '', quantity: 0, price: 0 };
 
 
 export default function EasyStockInventoryPage() {
-  const [stockItems, setStockItems] = useState<StockItem[]>(initialStock);
+  const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -162,25 +154,33 @@ export default function EasyStockInventoryPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredStock.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{item.sku}</TableCell>
-                    <TableCell className="text-right">{item.quantity}</TableCell>
-                    <TableCell className="text-right">${item.price.toFixed(2)}</TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant={getStatusVariant(item.status)}>{item.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEditItem(item)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteItem(item.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                {filteredStock.length > 0 ? (
+                  filteredStock.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-medium">{item.name}</TableCell>
+                      <TableCell className="text-muted-foreground">{item.sku}</TableCell>
+                      <TableCell className="text-right">{item.quantity}</TableCell>
+                      <TableCell className="text-right">${item.price.toFixed(2)}</TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant={getStatusVariant(item.status)}>{item.status}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEditItem(item)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteItem(item.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center h-24">
+                      No items in inventory. Add one to get started.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </CardContent>
