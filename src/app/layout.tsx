@@ -1,28 +1,17 @@
 
-'use client';
-
+import type { Metadata } from 'next';
 import './globals.css';
 import './print.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/sidebar-nav';
 import { FirebaseClientProvider } from '@/firebase';
-import { useEffect, useState } from 'react';
+import ClientOnly from '@/components/client-only';
 
-function ClientOnly({ children }: { children: React.ReactNode }) {
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  if (!hasMounted) {
-    return null;
-  }
-
-  return <>{children}</>;
-}
-
+export const metadata: Metadata = {
+  title: 'EasyFile - Effortless Document Generation',
+  description: 'Your one-stop solution for creating professional invoices, purchase orders, receipts, and more with unparalleled ease.',
+};
 
 export default function RootLayout({
   children,
