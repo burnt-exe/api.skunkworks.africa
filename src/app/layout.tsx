@@ -26,14 +26,16 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <FirebaseClientProvider>
           <SidebarProvider>
-            <Sidebar>
-              <SidebarNav />
-            </Sidebar>
-            <SidebarInset>
-              <main className="p-4 sm:p-6 lg:p-8">
-                  {children}
-              </main>
-            </SidebarInset>
+            <div className="flex">
+              <Sidebar>
+                <SidebarNav />
+              </Sidebar>
+              <SidebarInset>
+                <main className="p-4 sm:p-6 lg:p-8">
+                    {children}
+                </main>
+              </SidebarInset>
+            </div>
           </SidebarProvider>
         </FirebaseClientProvider>
         <Toaster />
