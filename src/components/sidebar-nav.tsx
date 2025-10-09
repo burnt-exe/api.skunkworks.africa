@@ -25,7 +25,7 @@ export function SidebarNav() {
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2">
             <Briefcase className="w-8 h-8 text-primary"/>
-            <h1 className="text-xl font-semibold group-data-[collapsible=icon]:hidden">EasyDocs</h1>
+            <h1 className="text-xl font-semibold group-data-[collapsible=icon]:hidden">Asaas</h1>
         </Link>
       </SidebarHeader>
       <SidebarMenu className="flex-1 p-4">
