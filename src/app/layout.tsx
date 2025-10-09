@@ -47,12 +47,12 @@ export default function RootLayout({
                 <Sidebar>
                   <SidebarNav />
                 </Sidebar>
+                <SidebarInset>
+                    <main className="p-4 sm:p-6 lg:p-8">
+                        {children}
+                    </main>
+                </SidebarInset>
               </ClientOnly>
-              <SidebarInset>
-                  <main className="p-4 sm:p-6 lg:p-8">
-                      {children}
-                  </main>
-              </SidebarInset>
             </div>
           </SidebarProvider>
         </FirebaseClientProvider>
