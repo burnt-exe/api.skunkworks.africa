@@ -33,7 +33,7 @@ export default function RootLayout({
           <SidebarProvider>
             <div className="flex">
               <ClientOnly>
-                <Sidebar>
+                <Sidebar collapsible="icon">
                   <SidebarNav />
                 </Sidebar>
                 <SidebarInset>
