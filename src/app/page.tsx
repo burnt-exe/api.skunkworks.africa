@@ -12,7 +12,7 @@ export default function LandingPage() {
       <header className="fixed top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-transparent">
         <Link href="/" className="flex items-center gap-2">
             <Briefcase className="w-8 h-8 text-primary"/>
-            <h1 className="text-xl font-semibold">Asaas</h1>
+            <h1 className="text-xl font-semibold">EasyFile</h1>
         </Link>
         <SidebarTrigger />
       </header>
@@ -29,7 +29,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-base sm:text-lg md:text-xl text-white/70 max-w-xs sm:max-w-lg md:max-w-2xl mx-auto mb-6 md:mb-8">
-            Welcome to Asaas. Your one-stop solution for creating professional invoices, purchase orders, receipts, and more with unparalleled ease.
+            Welcome to EasyFile. Your one-stop solution for creating professional invoices, purchase orders, receipts, and more with unparalleled ease.
           </p>
 
           <div className="flex justify-center gap-4">
@@ -44,7 +44,7 @@ export default function LandingPage() {
 
       <footer className="py-6 px-4 text-center text-xs sm:text-sm text-white/50">
         <p>
-          Copyright &copy; 2024 <a href="https://asaas.co.za" target="_blank" rel="noopener noreferrer" className="font-semibold text-white/80 hover:underline">asaas.co.za</a>
+          Copyright &copy; 2024 <a href="https://easyfile.co.za" target="_blank" rel="noopener noreferrer" className="font-semibold text-white/80 hover:underline">easyfile.co.za</a>
         </p>
         <div className="mt-2 space-x-2 sm:space-x-4">
           <Link href="#" className="transition-colors duration-300 hover:text-white">
