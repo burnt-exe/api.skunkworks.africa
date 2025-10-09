@@ -7,6 +7,22 @@ import { Toaster } from '@/components/ui/toaster';
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/sidebar-nav';
 import { FirebaseClientProvider } from '@/firebase';
+import { useEffect, useState } from 'react';
+
+function ClientOnly({ children }: { children: React.ReactNode }) {
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) {
+    return null;
+  }
+
+  return <>{children}</>;
+}
+
 
 export default function RootLayout({
   children,
@@ -26,16 +42,18 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <FirebaseClientProvider>
           <SidebarProvider>
-            <div className="flex">
-              <Sidebar>
-                <SidebarNav />
-              </Sidebar>
-              <SidebarInset>
-                <main className="p-4 sm:p-6 lg:p-8">
-                    {children}
-                </main>
-              </SidebarInset>
-            </div>
+            <ClientOnly>
+                <div className="flex">
+                <Sidebar>
+                    <SidebarNav />
+                </Sidebar>
+                <SidebarInset>
+                    <main className="p-4 sm:p-6 lg:p-8">
+                        {children}
+                    </main>
+                </SidebarInset>
+                </div>
+            </ClientOnly>
           </SidebarProvider>
         </FirebaseClientProvider>
         <Toaster />
