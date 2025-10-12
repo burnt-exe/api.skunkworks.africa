@@ -1,10 +1,10 @@
-
 'use client';
 
 import { usePathname } from 'next/navigation';
 import { SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from './ui/sidebar';
-import { FileText, Receipt, ShoppingCart, Users, Send, Briefcase, FileSignature, Package, Home, Banknote, Calculator } from 'lucide-react';
+import { FileText, Receipt, ShoppingCart, Users, Send, FileSignature, Package, Home, Banknote, Calculator } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
@@ -26,7 +26,7 @@ export function SidebarNav() {
     <div className='flex flex-col h-full text-sidebar-foreground'>
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2">
-            <Briefcase className="w-8 h-8 text-primary"/>
+            <Image src="/icon.png" alt="EasyFile Logo" width={32} height={32} />
             <h1 className="text-xl font-semibold group-data-[collapsible=icon]:hidden">EasyFile</h1>
         </Link>
       </SidebarHeader>
