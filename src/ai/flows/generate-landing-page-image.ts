@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI-powered tool that generates a background image for the landing page based on a user-provided prompt.
@@ -32,10 +33,10 @@ const generateLandingPageImageFlow = ai.defineFlow(
   },
   async (input) => {
     const { media } = await ai.generate({
-      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      model: 'googleai/gemini-2.5-flash-image-preview',
       prompt: `A stunning, photorealistic, high-resolution background image for a website. Scene: ${input.prompt}`,
       config: {
-        responseModalities: ['TEXT', 'IMAGE'],
+        responseModalities: ['IMAGE'],
       },
     });
 
