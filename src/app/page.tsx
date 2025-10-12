@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -13,7 +14,7 @@ export default function LandingPage() {
      <div className="flex flex-col min-h-screen bg-[#1a1a1a] text-white -m-4 sm:-m-6 lg:-m-8">
       <header className="fixed top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-transparent">
         <Link href="/" className="flex items-center gap-2">
-            <Image src="/studio/icon.svg" alt="EasyFile Logo" width={32} height={32} className="text-primary" />
+            <Image src="/icon.png" alt="EasyFile Logo" width={32} height={32} className="text-primary" />
             <h1 className="text-xl font-semibold">EasyFile</h1>
         </Link>
         <SidebarTrigger />

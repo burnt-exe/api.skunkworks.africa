@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { DocumentData } from '@/types';
@@ -106,7 +107,7 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
                 <Image src={logoUrl} alt="Company Logo" width={140} height={70} className="object-contain" data-ai-hint="company logo"/>
               ) : (
                 <div className="h-[70px] w-[140px] bg-muted flex items-center justify-center text-muted-foreground">
-                  Your Logo
+                   <Image src="/icon.png" alt="EasyFile Logo" width={140} height={70} className="object-contain" />
                 </div>
               )}
             </div>
