@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer base {
   :root {
     --background: 240 10% 96.1%;
@@ -27,13 +23,9 @@ body {
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 217 91% 60%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -54,11 +46,6 @@ body {
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 217 91% 60%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
   }
 }
 
@@ -71,26 +58,30 @@ body {
   }
 }
 
-@layer utilities {
-  .background-flow {
-    transition: transform 0.5s ease-in-out;
-    will-change: transform;
-  }
-
-  .background-flow:hover {
-    animation: backgroundShift 15s ease-in-out infinite alternate;
+@layer components {
+  /* Brand Text Gradient */
+  .brand-text {
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 }
 
-
-@keyframes backgroundShift {
-  0% {
-    transform: scale(1) translateX(0) translateY(0);
+@layer utilities {
+    /* Collapsible Animations */
+  @keyframes collapsible-down {
+    from { height: 0; opacity: 0; }
+    to { height: var(--radix-collapsible-content-height); opacity: 1; }
   }
-  50% {
-    transform: scale(1.1) translateX(-5px) translateY(5px);
+  @keyframes collapsible-up {
+    from { height: var(--radix-collapsible-content-height); opacity: 1; }
+    to { height: 0; opacity: 0; }
   }
-  100% {
-    transform: scale(1) translateX(5px) translateY(-5px);
+  .animate-collapsible-down {
+    animation: collapsible-down 0.25s ease-out;
+  }
+  .animate-collapsible-up {
+    animation: collapsible-up 0.2s ease-in;
   }
 }
