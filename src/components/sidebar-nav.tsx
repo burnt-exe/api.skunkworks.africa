@@ -3,7 +3,7 @@
 
 import { usePathname } from 'next/navigation';
 import { SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from './ui/sidebar';
-import { FileText, Receipt, ShoppingCart, Users, Send, Briefcase, FileSignature, Package, Home, ScanLine } from 'lucide-react';
+import { FileText, Receipt, ShoppingCart, Users, Send, Briefcase, FileSignature, Package, Home, Banknote } from 'lucide-react';
 import Link from 'next/link';
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
   { href: '/receipt', label: 'Receipt', icon: Receipt },
   { href: '/payslip', label: 'Payslip', icon: Users },
   { href: '/easy-stock-inventory', label: 'EasyStock Inventory', icon: Package },
+  { href: '/bank-statement-converter', label: 'Bank Statement Converter', icon: Banknote },
 ];
 
 export function SidebarNav() {
