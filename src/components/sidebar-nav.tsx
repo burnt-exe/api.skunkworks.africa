@@ -1,11 +1,27 @@
-
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from './ui/sidebar';
-import { FileText, Receipt, ShoppingCart, Users, Send, FileSignature, Package, Home, Banknote, Calculator } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import {
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from './ui/sidebar';
+import {
+  FileText,
+  Receipt,
+  ShoppingCart,
+  Users,
+  Send,
+  FileSignature,
+  Package,
+  Home,
+  Banknote,
+  Calculator,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
@@ -24,29 +40,69 @@ export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <div className='flex flex-col h-full text-sidebar-foreground'>
-      <SidebarHeader className="p-4">
-        <Link href="/" className="flex items-center gap-2">
-            <Image src="/icon.png" alt="EasyFile Logo" width={32} height={32} />
-            <h1 className="text-xl font-semibold group-data-[collapsible=icon]:hidden">EasyFile</h1>
+    <div className="flex flex-col h-full bg-[#0E0E1A] text-white/90 border-r border-white/10">
+      {/* Header */}
+      <SidebarHeader className="p-4 border-b border-white/10">
+        <Link href="/" className="flex items-center gap-3 group">
+          {/* Prefer SVG if supported, fallback to PNG */}
+          <div className="relative w-9 h-9">
+            <Image
+              src="/icon.svg"
+              alt="EasyFile Logo"
+              width={36}
+              height={36}
+              priority
+              className="object-contain drop-shadow-[0_0_6px_rgba(56,152,255,0.6)] group-hover:scale-110 transition-transform duration-300 ease-in-out"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/icon.png';
+              }}
+            />
+          </div>
+          <h1 className="text-lg font-semibold tracking-tight bg-gradient-to-r from-[#1D8EFF] to-[#00B4FF] bg-clip-text text-transparent group-data-[collapsible=icon]:hidden">
+            EasyFile
+          </h1>
         </Link>
       </SidebarHeader>
-      <SidebarMenu className="flex-grow p-4">
-        {navItems.map((item) => (
-          <SidebarMenuItem key={item.href}>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname === item.href}
-              tooltip={item.label}
-            >
-              <Link href={item.href}>
-                <item.icon />
-                <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
+
+      {/* Navigation */}
+      <SidebarMenu className="flex-grow p-2 space-y-1">
+        {navItems.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href;
+          return (
+            <SidebarMenuItem key={href}>
+              <SidebarMenuButton
+                asChild
+                isActive={isActive}
+                tooltip={label}
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200',
+                  'hover:bg-white/10 hover:text-white',
+                  isActive &&
+                    'bg-gradient-to-r from-[#1D8EFF]/20 to-[#00B4FF]/20 text-white font-medium shadow-inner'
+                )}
+              >
+                <Link href={href} aria-current={isActive ? 'page' : undefined}>
+                  <Icon
+                    className={cn(
+                      'w-5 h-5 shrink-0 transition-transform duration-200',
+                      isActive && 'scale-110 text-[#1D8EFF]'
+                    )}
+                  />
+                  <span className="group-data-[collapsible=icon]:hidden">
+                    {label}
+                  </span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          );
+        })}
       </SidebarMenu>
+
+      {/* Footer */}
+      <div className="p-4 text-xs text-white/40 border-t border-white/10">
+        EasyFile Suite — <span className="text-white/60">v1.0</span>
+      </div>
     </div>
   );
 }
