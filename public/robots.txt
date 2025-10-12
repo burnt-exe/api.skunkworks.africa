@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /$
+Disallow: /invoice
+Disallow: /easy-quote
+Disallow: /purchase-order
+Disallow: /sales-order
+Disallow: /receipt
+Disallow: /payslip
+Disallow: /easy-stock-inventory
+Disallow: /bank-statement-converter
+Disallow: /calculator
