@@ -23,14 +23,14 @@ export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <div className='flex flex-col h-full'>
+    <div className='flex flex-col h-full text-sidebar-foreground'>
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2">
             <Briefcase className="w-8 h-8 text-primary"/>
             <h1 className="text-xl font-semibold group-data-[collapsible=icon]:hidden">EasyFile</h1>
         </Link>
       </SidebarHeader>
-      <SidebarMenu className="flex-1 p-4">
+      <SidebarMenu className="flex-grow p-4">
         {navItems.map((item) => (
           <SidebarMenuItem key={item.href}>
             <SidebarMenuButton
