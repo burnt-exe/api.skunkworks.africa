@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -32,14 +33,14 @@ interface SidebarProviderProps {
 
 export function SidebarProvider({ children, defaultCollapsed = false }: SidebarProviderProps) {
   const isMobile = useIsMobile();
-  const [isCollapsed, setCollapsed] = React.useState(isMobile ? true : defaultCollapsed);
+  const [isCollapsed, setCollapsed] = React.useState(isMobile ?? false ? true : defaultCollapsed);
 
   React.useEffect(() => {
-    setCollapsed(isMobile ? true : defaultCollapsed);
+    setCollapsed(isMobile ?? false ? true : defaultCollapsed);
   }, [isMobile, defaultCollapsed]);
 
   return (
-    <SidebarContext.Provider value={{ isCollapsed, isMobile, setCollapsed }}>
+    <SidebarContext.Provider value={{ isCollapsed, isMobile: isMobile ?? false, setCollapsed }}>
         <TooltipProvider delayDuration={0}>
             {children}
         </TooltipProvider>
