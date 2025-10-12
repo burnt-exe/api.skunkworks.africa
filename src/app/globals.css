@@ -1,8 +1,13 @@
+/* 
+  NOTE: The '@tailwind' and '@apply' directives are specific to Tailwind CSS and may be flagged
+  by standard CSS linters. These are not errors and are processed correctly by the build tool.
+*/
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  /* Default color scheme */
   :root {
     --background: 240 10% 96.1%;
     --foreground: 240 10% 3.9%;
@@ -26,6 +31,7 @@
     --radius: 0.5rem;
   }
 
+  /* Dark mode color scheme */
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -62,8 +68,8 @@
   /* Brand Text Gradient */
   .brand-text {
     background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)));
-    background-clip: text;
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 }
