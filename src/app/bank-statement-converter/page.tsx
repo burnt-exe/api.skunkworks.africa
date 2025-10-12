@@ -8,6 +8,13 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { UploadCloud, LoaderCircle, Download, FileText, CheckCircle } from 'lucide-react';
 import { convertBankStatementAction } from '@/app/actions';
+import pdf from 'pdf-parse/lib/pdf-parse';
+
+// The pdf-parse library requires a global variable to be set for its worker.
+// This is a workaround for Next.js environments.
+if (typeof window !== 'undefined') {
+  (window as any).pdfjsWorker = import('pdfjs-dist/build/pdf.worker.min.mjs');
+}
 
 export default function BankStatementConverterPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -42,23 +49,34 @@ export default function BankStatementConverterPage() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('pdf-file', file);
-
     startTransition(async () => {
-      const result = await convertBankStatementAction(formData);
-      if (result.success && result.data) {
-        setConvertedCsv(result.data.csvContent);
+      try {
+        const fileBuffer = await file.arrayBuffer();
+        const pdfData = await pdf(fileBuffer);
+        const textContent = pdfData.text;
+
+        const result = await convertBankStatementAction({ textContent });
+
+        if (result.success && result.data) {
+          setConvertedCsv(result.data.csvContent);
+          toast({
+            title: 'Conversion Successful',
+            description: 'Your bank statement has been converted to CSV.',
+            variant: 'default',
+          });
+        } else {
+          toast({
+            title: 'Conversion Failed',
+            description: result.error,
+            variant: 'destructive',
+          });
+        }
+      } catch (error) {
+        console.error("PDF Parsing or Conversion Error:", error);
         toast({
-          title: 'Conversion Successful',
-          description: 'Your bank statement has been converted to CSV.',
-          variant: 'default',
-        });
-      } else {
-        toast({
-          title: 'Conversion Failed',
-          description: result.error,
-          variant: 'destructive',
+            title: 'Conversion Failed',
+            description: error instanceof Error ? error.message : "An unknown error occurred during PDF processing.",
+            variant: 'destructive',
         });
       }
     });
