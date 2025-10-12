@@ -43,6 +43,8 @@ const initialData: DocumentData = {
   }
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function QuotePage() {
   const [data, setData] = useState<DocumentData>(initialData);
 

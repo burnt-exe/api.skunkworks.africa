@@ -45,6 +45,8 @@ const initialData: DocumentData = {
   }
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function InvoicePage() {
   const [data, setData] = useState<DocumentData>(initialData);
   const { user, isUserLoading } = useUser();

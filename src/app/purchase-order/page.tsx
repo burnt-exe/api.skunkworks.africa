@@ -42,6 +42,8 @@ const initialData: DocumentData = {
   }
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function PurchaseOrderPage() {
   const [data, setData] = useState<DocumentData>(initialData);
 
@@ -316,8 +318,7 @@ export default function PurchaseOrderPage() {
                       <Input id="paymentDetails.bankName" name="paymentDetails.bankName" value={data.paymentDetails?.bankName} onChange={handleInputChange} />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="paymentDetails.accountName">Account Name</Label>
-                      <Input id="paymentDetails.accountName" name="paymentDetails.accountName" value={data.paymentDetails?.accountName} onChange={handleInputChange} />
+                      <Label htmlFor="paymentDetails.accountName">Account Name</Label>                      <Input id="paymentDetails.accountName" name="paymentDetails.accountName" value={data.paymentDetails?.accountName} onChange={handleInputChange} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="paymentDetails.accountNumber">Account Number</Label>

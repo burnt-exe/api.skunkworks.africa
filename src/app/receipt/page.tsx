@@ -34,6 +34,8 @@ const initialData: DocumentData = {
   amountPaid: 250.00,
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function ReceiptPage() {
   const [data, setData] = useState<DocumentData>(initialData);
 

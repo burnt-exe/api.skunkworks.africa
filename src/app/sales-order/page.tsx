@@ -42,6 +42,8 @@ const initialData: DocumentData = {
   }
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function SalesOrderPage() {
   const [data, setData] = useState<DocumentData>(initialData);
 

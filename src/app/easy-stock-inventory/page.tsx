@@ -65,6 +65,7 @@ const getStatus = (quantity: number): StockItemStatus => {
 
 const emptyItem: Omit<StockItem, 'id' | 'status'> = { name: '', sku: '', quantity: 0, price: 0 };
 
+export const dynamic = 'force-dynamic';
 
 export default function EasyStockInventoryPage() {
   const [stockItems, setStockItems] = useState<StockItem[]>([]);

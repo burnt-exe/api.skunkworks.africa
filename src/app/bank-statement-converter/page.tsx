@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -15,6 +16,8 @@ import pdf from 'pdf-parse/lib/pdf-parse';
 if (typeof window !== 'undefined') {
   (window as any).pdfjsWorker = import('pdfjs-dist/build/pdf.worker.min.mjs');
 }
+
+export const dynamic = 'force-dynamic';
 
 export default function BankStatementConverterPage() {
   const [file, setFile] = useState<File | null>(null);

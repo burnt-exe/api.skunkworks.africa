@@ -35,6 +35,8 @@ const initialData: DocumentData = {
   notes: 'Payment has been processed via direct deposit.',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function PayslipPage() {
   const [data, setData] = useState<DocumentData>(initialData);
 

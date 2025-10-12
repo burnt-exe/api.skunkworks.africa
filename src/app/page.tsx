@@ -6,6 +6,8 @@ import { Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
+export const dynamic = 'force-dynamic';
+
 export default function LandingPage() {
   return (
      <div className="flex flex-col min-h-screen bg-[#1a1a1a] text-white -m-4 sm:-m-6 lg:-m-8">
