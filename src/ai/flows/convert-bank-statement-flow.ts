@@ -9,9 +9,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {
-  Prompt,
-} from "genkit/experimental/ai";
 
 const ConvertBankStatementInputSchema = z.object({
   textContent: z.string().describe('The full text content extracted from the PDF bank statement.'),
@@ -28,12 +25,11 @@ export async function convertBankStatement(input: ConvertBankStatementInput): Pr
 }
 
 
-const conversionPrompt = new Prompt({
+const conversionPrompt = ai.definePrompt({
     name: "conversionPrompt",
-    input: { schema: ConvertBankStatementInputSchema },
-    output: { schema: ConvertBankStatementOutputSchema },
-    prompt: async (input) => {
-      const template = `
+    inputSchema: ConvertBankStatementInputSchema,
+    outputSchema: ConvertBankStatementOutputSchema,
+    prompt: `
 You are an expert financial assistant tasked with converting raw text from a bank statement into a CSV format suitable for Sage accounting software.
 
 The required CSV format has three columns with the exact headers: "Date", "Description", "Amount".
@@ -50,13 +46,7 @@ Here is the bank statement text:
 ---
 
 Generate only the CSV content, starting with the header row.
-      `;
-      return {
-        template,
-        context: { textContent: input.textContent },
-      };
-    },
-    model: ai.model("googleai/gemini-1.5-flash"),
+      `,
     config: {
       temperature: 0,
     }
@@ -70,7 +60,7 @@ const convertBankStatementFlow = ai.defineFlow(
     outputSchema: ConvertBankStatementOutputSchema,
   },
   async (input) => {
-      const response = await conversionPrompt.run(input);
+      const response = await conversionPrompt(input);
       const output = response.output;
 
       if (!output) {
