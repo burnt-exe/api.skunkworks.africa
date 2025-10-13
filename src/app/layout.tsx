@@ -1,6 +1,6 @@
 
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import './print.css';
 
@@ -14,7 +14,14 @@ import ClientOnly from '@/components/client-only';
 const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '700'],
-  variable: '--font-body',
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-space-grotesk',
   display: 'swap',
 });
 
@@ -49,7 +56,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} font-body antialiased bg-background text-foreground min-h-screen`}
+        className={`${inter.variable} ${spaceGrotesk.variable} font-body antialiased bg-background text-foreground min-h-screen`}
       >
         {/* Client-side Firebase context */}
         <FirebaseClientProvider>

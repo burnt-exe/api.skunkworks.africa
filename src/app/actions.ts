@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -12,6 +13,10 @@ import {
   convertBankStatement,
   type ConvertBankStatementInput,
 } from '@/ai/flows/convert-bank-statement-flow';
+import {
+  convertPdfToDocx,
+  type ConvertPdfToDocxInput,
+} from '@/ai/flows/convert-pdf-to-docx-flow';
 
 /**
  * Standardized server action response shape.
@@ -76,5 +81,19 @@ export async function convertBankStatementAction(
     return { success: true, data };
   } catch (error) {
     return handleActionError('Error during bank statement conversion', error);
+  }
+}
+
+/**
+ * Converts an uploaded PDF file to a DOCX document.
+ */
+export async function convertPdfToDocxAction(
+  input: ConvertPdfToDocxInput,
+): Promise<ServerActionResponse<Awaited<ReturnType<typeof convertPdfToDocx>>>> {
+  try {
+    const data = await convertPdfToDocx(input);
+    return { success: true, data };
+  } catch (error) {
+    return handleActionError('Error during PDF to DOCX conversion', error);
   }
 }

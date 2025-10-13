@@ -20,8 +20,8 @@ import {
   FileSignature,
   Package,
   Home,
-  Banknote,
   Calculator,
+  FileCog,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -43,7 +43,7 @@ export function SidebarNav() {
       { href: '/receipt', label: 'Receipt', icon: Receipt },
       { href: '/payslip', label: 'Payslip', icon: Users },
       { href: '/easy-stock-inventory', label: 'EasyStock Inventory', icon: Package },
-      { href: '/bank-statement-converter', label: 'Bank Statement Converter', icon: Banknote },
+      { href: '/easy-docu-convert', label: 'EasyDocuConvert', icon: FileCog },
       { href: '/calculator', label: 'Calculator', icon: Calculator },
     ],
     []
