@@ -1,20 +1,27 @@
+# cloudbuild.yaml — Skunkworks API auto-deploy
 steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/$PROJECT_ID/skunkworks-api', '.']
+
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/skunkworks-api']
+
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
       [
-        'run','deploy','skunkworks-api',
-        '--image','gcr.io/$PROJECT_ID/skunkworks-api',
-        '--region','us-central1',
-        '--platform','managed',
+        'run', 'deploy', 'skunkworks-api',
+        '--image', 'gcr.io/$PROJECT_ID/skunkworks-api',
+        '--region', 'us-central1',
+        '--platform', 'managed',
         '--allow-unauthenticated',
-        '--port','8080'
+        '--port', '8080'
       ]
+
 images:
   - 'gcr.io/$PROJECT_ID/skunkworks-api'
+
+timeout: '900s'
+
 options:
   logging: CLOUD_LOGGING_ONLY
