@@ -27,6 +27,7 @@ export default function LandingPage() {
                     alt="EasyFile Logo"
                     width={96}
                     height={96}
+                    priority
                     className="transition-transform duration-300 group-hover:scale-110"
                 />
             </div>
