@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea';
 import DocumentPreview from '@/components/document-preview';
 import { suggestItemsAction, convertPdfToDocxAction } from '@/app/actions';
-import { convertToXlsxAction } from '@/app/actions/convert-to-xlsx';
+import { convertToXlsxAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import {
   PlusCircle,
@@ -130,8 +130,8 @@ export default function SalesOrderPage() {
         businessType: aiState.businessType,
         vatRate: parseFloat(aiState.vatRate) / 100,
       });
-      if (result.success && result.data) {
-        setData((prev) => ({ ...prev, lineItems: result.data }));
+      if (result.success) {
+        setData((prev) => ({ ...prev, lineItems: result.data || [] }));
         toast({ title: 'AI Updated Line Items', description: 'Items generated successfully.' });
       } else {
         toast({
@@ -148,11 +148,15 @@ export default function SalesOrderPage() {
   /* -------------------------------------------------------------------------- */
   const handleWordExport = () => {
     startTransition(async () => {
+      // This is a placeholder for generating a PDF from the current data
+      // A real implementation would generate a PDF on the server and return the data URI
+      const dummyPdfDataUri = "data:application/pdf;base64,JVBERi0xLjcK...";
+
       const result = await convertPdfToDocxAction({
-        fileUrl: '/api/generate-pdf?salesOrderId=current', // placeholder endpoint
+        pdfDataUri: dummyPdfDataUri,
       });
-      if (result.success && result.data?.url) {
-        window.open(result.data.url, '_blank');
+      if (result.success && result.data?.docxDataUri) {
+        window.open(result.data.docxDataUri, '_blank');
       } else {
         toast({ title: 'Word Export Failed', description: result.error, variant: 'destructive' });
       }
@@ -162,8 +166,8 @@ export default function SalesOrderPage() {
   const handleExcelExport = () => {
     startTransition(async () => {
       const result = await convertToXlsxAction(data);
-      if (result.success && result.data?.url) {
-        window.open(result.data.url, '_blank');
+      if (result.success && result.data?.xlsxDataUri) {
+        window.open(result.data.xlsxDataUri, '_blank');
       } else {
         toast({ title: 'Excel Export Failed', description: result.error, variant: 'destructive' });
       }
@@ -324,13 +328,13 @@ export default function SalesOrderPage() {
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {Object.entries(data.paymentDetails).map(([key, value]) => (
+                    {data.paymentDetails && Object.entries(data.paymentDetails).map(([key, value]) => (
                       <div className="space-y-2" key={key}>
-                        <Label htmlFor={`paymentDetails.${key}`}>{key}</Label>
+                        <Label htmlFor={`paymentDetails.${key}`}>{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</Label>
                         <Input
                           id={`paymentDetails.${key}`}
                           name={`paymentDetails.${key}`}
-                          value={value}
+                          value={value as string}
                           onChange={handleInputChange}
                         />
                       </div>
@@ -366,15 +370,15 @@ export default function SalesOrderPage() {
                 <Printer className="mr-2" /> Print / PDF
               </Button>
               <Button variant="outline" onClick={handleWordExport} disabled={isPending}>
-                <Download className="mr-2" /> Word
+                {isPending ? <LoaderCircle className="animate-spin" /> : <Download className="mr-2" />} Word
               </Button>
               <Button variant="outline" onClick={handleExcelExport} disabled={isPending}>
-                <Download className="mr-2" /> Excel
+                {isPending ? <LoaderCircle className="animate-spin" /> : <Download className="mr-2" />} Excel
               </Button>
             </CardContent>
           </Card>
 
-          {isPending ? (
+          {isPending && !data ? (
             <div className="animate-pulse h-[600px] rounded-lg bg-muted/30" />
           ) : (
             <DocumentPreview data={data} />

@@ -19,6 +19,11 @@ import {
   convertPdfToDocx,
   type ConvertPdfToDocxInput,
 } from '@/ai/flows/convert-pdf-to-docx-flow';
+import {
+  convertToXlsx,
+  type ConvertToXlsxInput,
+} from '@/ai/flows/convert-to-xlsx-flow';
+import type { DocumentData } from '@/types';
 
 /* -------------------------------------------------------------------------- */
 /*                            Standard Response Type                          */
@@ -67,24 +72,23 @@ function handleActionError(
 /*                               Zod Schemas                                  */
 /* -------------------------------------------------------------------------- */
 const SuggestItemsSchema = z.object({
-  query: z.string().min(1, 'Query is required'),
-  limit: z.number().optional(),
+  businessType: z.string().min(1, 'Business type is required'),
+  vatRate: z.number(),
 });
 
 const GenerateLandingPageImageSchema = z.object({
   prompt: z.string().min(1, 'Prompt is required'),
-  size: z.string().optional(),
 });
 
 const ConvertBankStatementSchema = z.object({
-  fileUrl: z.string().url('Valid file URL required'),
-  format: z.enum(['csv', 'json', 'xlsx']).optional(),
+  textContent: z.string().min(1, 'Text content is required'),
 });
 
 const ConvertPdfToDocxSchema = z.object({
-  fileUrl: z.string().url('Valid file URL required'),
-  retainImages: z.boolean().optional(),
+  pdfDataUri: z.string().url('Valid data URI required'),
 });
+
+const ConvertToXlsxSchema = z.custom<DocumentData>();
 
 /* -------------------------------------------------------------------------- */
 /*                                Server Actions                              */
@@ -111,7 +115,9 @@ export async function suggestItemsAction(
  */
 export async function generateLandingPageImageAction(
   input: GenerateLandingPageImageInput,
-): Promise<ServerActionResponse<Awaited<ReturnType<typeof generateLandingPageImage>>>> {
+): Promise<
+  ServerActionResponse<Awaited<ReturnType<typeof generateLandingPageImage>>>
+> {
   const traceId = randomUUID();
   try {
     GenerateLandingPageImageSchema.parse(input);
@@ -127,14 +133,20 @@ export async function generateLandingPageImageAction(
  */
 export async function convertBankStatementAction(
   input: ConvertBankStatementInput,
-): Promise<ServerActionResponse<Awaited<ReturnType<typeof convertBankStatement>>>> {
+): Promise<
+  ServerActionResponse<Awaited<ReturnType<typeof convertBankStatement>>>
+> {
   const traceId = randomUUID();
   try {
     ConvertBankStatementSchema.parse(input);
     const data = await convertBankStatement(input);
     return ok(data, traceId);
   } catch (error) {
-    return handleActionError('Error during bank statement conversion', error, traceId);
+    return handleActionError(
+      'Error during bank statement conversion',
+      error,
+      traceId,
+    );
   }
 }
 
@@ -151,5 +163,21 @@ export async function convertPdfToDocxAction(
     return ok(data, traceId);
   } catch (error) {
     return handleActionError('Error during PDF to DOCX conversion', error, traceId);
+  }
+}
+
+/**
+ * Converts document data to an XLSX file.
+ */
+export async function convertToXlsxAction(
+  input: ConvertToXlsxInput,
+): Promise<ServerActionResponse<Awaited<ReturnType<typeof convertToXlsx>>>> {
+  const traceId = randomUUID();
+  try {
+    ConvertToXlsxSchema.parse(input);
+    const data = await convertToXlsx(input);
+    return ok(data, traceId);
+  } catch (error) {
+    return handleActionError('Error during XLSX conversion', error, traceId);
   }
 }
