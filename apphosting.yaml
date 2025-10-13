@@ -1,43 +1,8 @@
-# Firebase App Hosting configuration
-# Reference: https://firebase.google.com/docs/app-hosting/configure
-# This file controls instance scaling, runtime settings, and environment variables.
-
 runConfig:
-  # The maximum number of concurrent backend instances that Firebase Hosting can create.
-  # Increase this value for production traffic or high load API endpoints.
   maxInstances: 1
-
-  # Optional: minimum number of instances kept warm to reduce cold starts.
-  # Set to 1+ for lower latency, at a slightly higher cost.
-  # minInstances: 0
-
-  # Optional: specify instance region for lower latency to your users.
-  # See https://cloud.google.com/about/locations
-  # region: europe-west1  # Johannesburg region closest equivalent: africa-south1
-
-  # Optional: restrict CPU and memory resources per instance.
-  # cpu: 0.25  # Fractional CPU for lightweight workloads
-  # memoryMiB: 512
-
-  # Optional: timeouts (seconds) for each request.
-  # timeoutSeconds: 60
-
-  # Optional: concurrency control (requests handled per instance).
-  # concurrency: 80
-
+runtime: nodejs
 env:
-  # Environment variables available to your backend runtime.
-  # Use secrets for sensitive data — see `firebase functions:secrets:set`
-  NODE_ENV: "production"
-  FIREBASE_REGION: "africa-south1"
-  LOG_LEVEL: "info"
-  # API_BASE_URL: "https://api.skunkworks.africa"
-  # GEMINI_API_KEY: "${GEMINI_API_KEY}"
-
-# Optional: VPC connector if you need to access private resources
-# vpcConnector: projects/<PROJECT_ID>/locations/africa-south1/connectors/<CONNECTOR_NAME>
-
-# Optional: build configuration for frameworks (Next.js, React SSR, etc.)
-# build:
-#   command: "npm run build"
-#   outputDir: "build"
+  - key: FIREBASE_CONFIG
+    value: '{"projectId":"easyfilev20-27833257-6347a","storageBucket":"easyfilev20-27833257-6347a.appspot.com"}'
+  - key: GOOGLE_APPLICATION_CREDENTIALS
+    value: "/workspace/serviceAccountKey.json"
