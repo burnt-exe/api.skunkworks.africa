@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
   description:
     'Create professional invoices, purchase orders, receipts, and more with simplicity and precision using EasyFile.',
   metadataBase: new URL('https://easyfile.app'), // ✅ helps with canonical + OG URLs
+  manifest: '/manifest.json',
   openGraph: {
     title: 'EasyFile – Effortless Document Generation',
     description:
