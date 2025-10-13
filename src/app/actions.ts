@@ -1,5 +1,7 @@
-
 'use server';
+
+import { randomUUID } from 'crypto';
+import { z } from 'zod';
 
 import {
   suggestItems,
@@ -18,19 +20,28 @@ import {
   type ConvertPdfToDocxInput,
 } from '@/ai/flows/convert-pdf-to-docx-flow';
 
-/**
- * Standardized server action response shape.
- */
+/* -------------------------------------------------------------------------- */
+/*                            Standard Response Type                          */
+/* -------------------------------------------------------------------------- */
 interface ServerActionResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
+  traceId?: string;
 }
 
-/**
- * Unified error handler — ensures consistent logs & messages.
- */
-function handleActionError(context: string, error: unknown): ServerActionResponse<never> {
+/* -------------------------------------------------------------------------- */
+/*                                Helper Utils                                */
+/* -------------------------------------------------------------------------- */
+function ok<T>(data: T, traceId: string): ServerActionResponse<T> {
+  return { success: true, data, traceId };
+}
+
+function handleActionError(
+  context: string,
+  error: unknown,
+  traceId: string,
+): ServerActionResponse<never> {
   const message =
     error instanceof Error
       ? error.message
@@ -38,9 +49,46 @@ function handleActionError(context: string, error: unknown): ServerActionRespons
       ? error
       : 'An unknown error occurred.';
 
-  console.error(`[${context}]`, error);
-  return { success: false, error: `${context}: ${message}` };
+  console.error(
+    JSON.stringify({
+      level: 'error',
+      context,
+      message,
+      traceId,
+      timestamp: new Date().toISOString(),
+      stack: error instanceof Error ? error.stack : undefined,
+    }),
+  );
+
+  return { success: false, error: `${context}: ${message}`, traceId };
 }
+
+/* -------------------------------------------------------------------------- */
+/*                               Zod Schemas                                  */
+/* -------------------------------------------------------------------------- */
+const SuggestItemsSchema = z.object({
+  query: z.string().min(1, 'Query is required'),
+  limit: z.number().optional(),
+});
+
+const GenerateLandingPageImageSchema = z.object({
+  prompt: z.string().min(1, 'Prompt is required'),
+  size: z.string().optional(),
+});
+
+const ConvertBankStatementSchema = z.object({
+  fileUrl: z.string().url('Valid file URL required'),
+  format: z.enum(['csv', 'json', 'xlsx']).optional(),
+});
+
+const ConvertPdfToDocxSchema = z.object({
+  fileUrl: z.string().url('Valid file URL required'),
+  retainImages: z.boolean().optional(),
+});
+
+/* -------------------------------------------------------------------------- */
+/*                                Server Actions                              */
+/* -------------------------------------------------------------------------- */
 
 /**
  * Suggest AI-driven item recommendations based on input criteria.
@@ -48,11 +96,13 @@ function handleActionError(context: string, error: unknown): ServerActionRespons
 export async function suggestItemsAction(
   input: SuggestItemsInput,
 ): Promise<ServerActionResponse<Awaited<ReturnType<typeof suggestItems>>>> {
+  const traceId = randomUUID();
   try {
+    SuggestItemsSchema.parse(input);
     const data = await suggestItems(input);
-    return { success: true, data };
+    return ok(data, traceId);
   } catch (error) {
-    return handleActionError('Failed to get suggestions', error);
+    return handleActionError('Failed to get suggestions', error, traceId);
   }
 }
 
@@ -62,11 +112,13 @@ export async function suggestItemsAction(
 export async function generateLandingPageImageAction(
   input: GenerateLandingPageImageInput,
 ): Promise<ServerActionResponse<Awaited<ReturnType<typeof generateLandingPageImage>>>> {
+  const traceId = randomUUID();
   try {
+    GenerateLandingPageImageSchema.parse(input);
     const data = await generateLandingPageImage(input);
-    return { success: true, data };
+    return ok(data, traceId);
   } catch (error) {
-    return handleActionError('Failed to generate image', error);
+    return handleActionError('Failed to generate image', error, traceId);
   }
 }
 
@@ -76,11 +128,13 @@ export async function generateLandingPageImageAction(
 export async function convertBankStatementAction(
   input: ConvertBankStatementInput,
 ): Promise<ServerActionResponse<Awaited<ReturnType<typeof convertBankStatement>>>> {
+  const traceId = randomUUID();
   try {
+    ConvertBankStatementSchema.parse(input);
     const data = await convertBankStatement(input);
-    return { success: true, data };
+    return ok(data, traceId);
   } catch (error) {
-    return handleActionError('Error during bank statement conversion', error);
+    return handleActionError('Error during bank statement conversion', error, traceId);
   }
 }
 
@@ -90,10 +144,12 @@ export async function convertBankStatementAction(
 export async function convertPdfToDocxAction(
   input: ConvertPdfToDocxInput,
 ): Promise<ServerActionResponse<Awaited<ReturnType<typeof convertPdfToDocx>>>> {
+  const traceId = randomUUID();
   try {
+    ConvertPdfToDocxSchema.parse(input);
     const data = await convertPdfToDocx(input);
-    return { success: true, data };
+    return ok(data, traceId);
   } catch (error) {
-    return handleActionError('Error during PDF to DOCX conversion', error);
+    return handleActionError('Error during PDF to DOCX conversion', error, traceId);
   }
 }

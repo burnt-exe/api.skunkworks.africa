@@ -1,7 +1,7 @@
-
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition, useEffect, useRef } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 import type { DocumentData, LineItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,42 +12,69 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import DocumentPreview from '@/components/document-preview';
-import { suggestItemsAction } from '@/app/actions';
+import { suggestItemsAction, convertPdfToDocxAction } from '@/app/actions';
+import { convertToXlsxAction } from '@/app/actions/convert-to-xlsx';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Sparkles, Trash2, LoaderCircle, Printer, Download, Upload, ChevronDown } from 'lucide-react';
+import {
+  PlusCircle,
+  Sparkles,
+  Trash2,
+  LoaderCircle,
+  Printer,
+  Download,
+  Upload,
+  ChevronDown,
+} from 'lucide-react';
 import React from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
+export const dynamic = 'force-dynamic';
 
 const initialData: DocumentData = {
   title: 'SALES ORDER',
   logoUrl: '',
   from: { name: 'Your Company', address: '123 Main St, Anytown, USA' },
   to: { name: 'Customer Company', address: '456 Oak Ave, Otherville, USA' },
-  details: {
-    label: 'SO No.',
-    value: '',
-  },
+  details: { label: 'SO No.', value: '' },
   date: '',
   lineItems: [
     { description: 'Product X', quantity: 10, price: 75.0 },
     { description: 'Service Y', quantity: 1, price: 300.0 },
   ],
-  notes: 'Items will be shipped within 3-5 business days.',
+  notes: 'Items will be shipped within 3–5 business days.',
   vatRate: 20,
   paymentDetails: {
     bankName: 'Global Bank',
     accountName: 'Your Company Inc.',
     accountNumber: '1234567890',
     sortCode: '12-34-56',
-  }
+  },
 };
 
-export const dynamic = 'force-dynamic';
+/* -------------------------------------------------------------------------- */
+/*                        Utility: Safe Nested State Update                   */
+/* -------------------------------------------------------------------------- */
+function updateNestedState(obj: any, path: string[], value: any): any {
+  if (path.length === 1) return { ...obj, [path[0]]: value };
+  const [key, ...rest] = path;
+  return { ...obj, [key]: updateNestedState(obj[key] ?? {}, rest, value) };
+}
 
 export default function SalesOrderPage() {
   const [data, setData] = useState<DocumentData>(initialData);
+  const mounted = useRef(false);
+  const [aiState, setAiState] = useState({ businessType: 'Retail', vatRate: '20' });
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+  /* -------------------------------------------------------------------------- */
+  /*                             Initialize Defaults                            */
+  /* -------------------------------------------------------------------------- */
   useEffect(() => {
+    if (mounted.current) return;
+    mounted.current = true;
+
     setData((prev) => ({
       ...prev,
       details: {
@@ -58,31 +85,19 @@ export default function SalesOrderPage() {
     }));
   }, []);
 
-  const [aiState, setAiState] = useState({ businessType: 'Retail', vatRate: '20' });
-  const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
+  /* -------------------------------------------------------------------------- */
+  /*                              Input Handlers                                */
+  /* -------------------------------------------------------------------------- */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    const keys = name.split('.');
-    if (keys.length > 1) {
-      setData((prev) => ({
-        ...prev,
-        [keys[0]]: { ...prev[keys[0] as keyof DocumentData], [keys[1]]: value },
-      }));
-    } else {
-      setData((prev) => ({ ...prev, [name]: value }));
-    }
+    setData((prev) => updateNestedState(prev, name.split('.'), value));
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setData(prev => ({ ...prev, logoUrl: reader.result as string }));
-      };
+      reader.onloadend = () => setData((prev) => ({ ...prev, logoUrl: reader.result as string }));
       reader.readAsDataURL(file);
     }
   };
@@ -106,147 +121,142 @@ export default function SalesOrderPage() {
     setData((prev) => ({ ...prev, lineItems: newLineItems }));
   };
 
-  const handleAiSuggest = () => {
+  /* -------------------------------------------------------------------------- */
+  /*                            AI Suggestion Logic                             */
+  /* -------------------------------------------------------------------------- */
+  const debouncedAiSuggest = useDebouncedCallback(() => {
     startTransition(async () => {
       const result = await suggestItemsAction({
         businessType: aiState.businessType,
         vatRate: parseFloat(aiState.vatRate) / 100,
       });
       if (result.success && result.data) {
-        setData((prev) => ({ ...prev, lineItems: result.data! }));
-        toast({
-          title: 'Success',
-          description: 'AI has suggested new line items.',
-          variant: 'default',
-        });
+        setData((prev) => ({ ...prev, lineItems: result.data }));
+        toast({ title: 'AI Updated Line Items', description: 'Items generated successfully.' });
       } else {
         toast({
-          title: 'Error',
-          description: result.error,
+          title: 'AI Suggestion Failed',
+          description: result.error || 'Something went wrong.',
           variant: 'destructive',
         });
       }
     });
+  }, 1000);
+
+  /* -------------------------------------------------------------------------- */
+  /*                               Export Handlers                              */
+  /* -------------------------------------------------------------------------- */
+  const handleWordExport = () => {
+    startTransition(async () => {
+      const result = await convertPdfToDocxAction({
+        fileUrl: '/api/generate-pdf?salesOrderId=current', // placeholder endpoint
+      });
+      if (result.success && result.data?.url) {
+        window.open(result.data.url, '_blank');
+      } else {
+        toast({ title: 'Word Export Failed', description: result.error, variant: 'destructive' });
+      }
+    });
   };
 
+  const handleExcelExport = () => {
+    startTransition(async () => {
+      const result = await convertToXlsxAction(data);
+      if (result.success && result.data?.url) {
+        window.open(result.data.url, '_blank');
+      } else {
+        toast({ title: 'Excel Export Failed', description: result.error, variant: 'destructive' });
+      }
+    });
+  };
+
+  /* -------------------------------------------------------------------------- */
+  /*                               UI Rendering                                 */
+  /* -------------------------------------------------------------------------- */
   return (
     <div className="grid h-full min-h-[calc(100vh-4rem)] grid-cols-1 gap-8 lg:grid-cols-2">
+      {/* Left Panel — Form */}
       <ScrollArea className="h-full max-h-[calc(100vh-4rem)] rounded-lg border bg-card shadow-sm">
         <div className="p-6">
           <h1 className="text-2xl font-bold">Sales Order Details</h1>
           <p className="text-muted-foreground">Fill in the details to generate your sales order.</p>
           <Separator className="my-6" />
-          <div className="space-y-6">
-            <Collapsible asChild>
-              <Card>
-                <CollapsibleTrigger className="w-full">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>AI Assistant</CardTitle>
-                    <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
-                  </CardHeader>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div>
-                        <Label htmlFor="businessType">Business Type</Label>
-                        <Input
-                          id="businessType"
-                          value={aiState.businessType}
-                          onChange={(e) => setAiState({ ...aiState, businessType: e.target.value })}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="vatRateAi">VAT Rate (%)</Label>
-                        <Input
-                          id="vatRateAi"
-                          type="number"
-                          value={aiState.vatRate}
-                          onChange={(e) => setAiState({ ...aiState, vatRate: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                    <Button onClick={handleAiSuggest} disabled={isPending}>
-                      {isPending ? (
-                        <LoaderCircle className="animate-spin" />
-                      ) : (
-                        <Sparkles className="mr-2" />
-                      )}
-                      Suggest Items
-                    </Button>
-                  </CardContent>
-                </CollapsibleContent>
-              </Card>
-            </Collapsible>
 
+          {/* ---------------------- AI Assistant Section ----------------------- */}
+          <Collapsible asChild>
+            <Card>
+              <CollapsibleTrigger className="w-full">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>AI Assistant</CardTitle>
+                  <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <Label htmlFor="businessType">Business Type</Label>
+                      <Input
+                        id="businessType"
+                        value={aiState.businessType}
+                        onChange={(e) => setAiState({ ...aiState, businessType: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="vatRateAi">VAT Rate (%)</Label>
+                      <Input
+                        id="vatRateAi"
+                        type="number"
+                        value={aiState.vatRate}
+                        onChange={(e) => setAiState({ ...aiState, vatRate: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <Button onClick={debouncedAiSuggest} disabled={isPending}>
+                    {isPending ? <LoaderCircle className="animate-spin" /> : <Sparkles className="mr-2" />}
+                    Suggest Items
+                  </Button>
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+
+          {/* ---------------------- Core Document Fields ----------------------- */}
+          <div className="mt-6 space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="from.name">From</Label>
-                <Input
-                  id="from.name"
-                  name="from.name"
-                  placeholder="Your Company"
-                  value={data.from.name}
-                  onChange={handleInputChange}
-                />
-                <Textarea
-                  name="from.address"
-                  placeholder="Your Address"
-                  value={data.from.address}
-                  onChange={handleInputChange}
-                />
+                <Input id="from.name" name="from.name" value={data.from.name} onChange={handleInputChange} />
+                <Textarea name="from.address" value={data.from.address} onChange={handleInputChange} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="to.name">To</Label>
-                <Input
-                  id="to.name"
-                  name="to.name"
-                  placeholder="Client's Company"
-                  value={data.to.name}
-                  onChange={handleInputChange}
-                />
-                <Textarea
-                  name="to.address"
-                  placeholder="Client's Address"
-                  value={data.to.address}
-                  onChange={handleInputChange}
-                />
+                <Input id="to.name" name="to.name" value={data.to.name} onChange={handleInputChange} />
+                <Textarea name="to.address" value={data.to.address} onChange={handleInputChange} />
               </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="logoUrl">Company Logo</Label>
-               <div className="flex items-center gap-4">
-                <Input
-                    id="logoUrl"
-                    name="logoUrl"
-                    placeholder="https://your-logo.com/logo.png"
-                    value={data.logoUrl}
-                    onChange={handleInputChange}
-                    className="flex-grow"
-                />
+              <div className="flex items-center gap-4">
+                <Input id="logoUrl" name="logoUrl" value={data.logoUrl} onChange={handleInputChange} className="flex-grow" />
                 <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="mr-2 h-4 w-4" /> Upload
+                  <Upload className="mr-2 h-4 w-4" /> Upload
                 </Button>
                 <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleLogoUpload}
-                    className="hidden"
-                    accept="image/*"
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                  accept="image/*"
                 />
-                </div>
+              </div>
             </div>
-            
+
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="details.value">Sales Order Number</Label>
-                <Input
-                  id="details.value"
-                  name="details.value"
-                  value={data.details.value}
-                  onChange={handleInputChange}
-                />
+                <Input id="details.value" name="details.value" value={data.details.value} onChange={handleInputChange} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="date">Order Date</Label>
@@ -254,15 +264,16 @@ export default function SalesOrderPage() {
               </div>
             </div>
 
+            {/* ---------------------- Line Items ----------------------- */}
             <div>
               <Label>Line Items</Label>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Description</TableHead>
-                    <TableHead className="w-[100px]">Quantity</TableHead>
+                    <TableHead className="w-[100px]">Qty</TableHead>
                     <TableHead className="w-[120px]">Price</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead className="w-[50px]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -298,11 +309,11 @@ export default function SalesOrderPage() {
                 </TableBody>
               </Table>
               <Button variant="outline" size="sm" className="mt-4" onClick={addLineItem}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Item
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Item
               </Button>
             </div>
-            
+
+            {/* ---------------------- Payment Details ----------------------- */}
             <Collapsible asChild>
               <Card>
                 <CollapsibleTrigger className="w-full">
@@ -313,61 +324,61 @@ export default function SalesOrderPage() {
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="paymentDetails.bankName">Bank Name</Label>
-                      <Input id="paymentDetails.bankName" name="paymentDetails.bankName" value={data.paymentDetails?.bankName} onChange={handleInputChange} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="paymentDetails.accountName">Account Name</Label>
-                      <Input id="paymentDetails.accountName" name="paymentDetails.accountName" value={data.paymentDetails?.accountName} onChange={handleInputChange} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="paymentDetails.accountNumber">Account Number</Label>
-                      <Input id="paymentDetails.accountNumber" name="paymentDetails.accountNumber" value={data.paymentDetails?.accountNumber} onChange={handleInputChange} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="paymentDetails.sortCode">Sort Code / BIC</Label>
-                      <Input id="paymentDetails.sortCode" name="paymentDetails.sortCode" value={data.paymentDetails?.sortCode} onChange={handleInputChange} />
-                    </div>
+                    {Object.entries(data.paymentDetails).map(([key, value]) => (
+                      <div className="space-y-2" key={key}>
+                        <Label htmlFor={`paymentDetails.${key}`}>{key}</Label>
+                        <Input
+                          id={`paymentDetails.${key}`}
+                          name={`paymentDetails.${key}`}
+                          value={value}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                    ))}
                   </CardContent>
                 </CollapsibleContent>
               </Card>
             </Collapsible>
-            
+
+            {/* ---------------------- Notes & VAT ----------------------- */}
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
-              <Textarea id="notes" name="notes" placeholder="Any additional notes..." value={data.notes} onChange={handleInputChange} />
+              <Textarea id="notes" name="notes" value={data.notes} onChange={handleInputChange} />
             </div>
 
-             <div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="vatRate">VAT Rate (%)</Label>
-              <Input id="vatRate" name="vatRate" type="number" placeholder="20" value={data.vatRate} onChange={handleInputChange} />
+              <Input id="vatRate" name="vatRate" type="number" value={data.vatRate} onChange={handleInputChange} />
             </div>
           </div>
         </div>
       </ScrollArea>
+
+      {/* ---------------------- Right Panel — Preview & Actions ----------------------- */}
       <div className="h-full">
-         <div className="sticky top-6 space-y-4">
-             <Card>
-                <CardHeader>
-                    <CardTitle>Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="flex items-center gap-2">
-                    <Button onClick={() => window.print()}>
-                        <Printer className="mr-2"/>
-                        Print / PDF
-                    </Button>
-                    <Button variant="outline" disabled>
-                        <Download className="mr-2" />
-                        Word
-                    </Button>
-                     <Button variant="outline" disabled>
-                        <Download className="mr-2" />
-                        Excel
-                    </Button>
-                </CardContent>
-            </Card>
+        <div className="sticky top-6 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="flex items-center gap-2">
+              <Button onClick={() => window.print()}>
+                <Printer className="mr-2" /> Print / PDF
+              </Button>
+              <Button variant="outline" onClick={handleWordExport} disabled={isPending}>
+                <Download className="mr-2" /> Word
+              </Button>
+              <Button variant="outline" onClick={handleExcelExport} disabled={isPending}>
+                <Download className="mr-2" /> Excel
+              </Button>
+            </CardContent>
+          </Card>
+
+          {isPending ? (
+            <div className="animate-pulse h-[600px] rounded-lg bg-muted/30" />
+          ) : (
             <DocumentPreview data={data} />
+          )}
         </div>
       </div>
     </div>

@@ -31,7 +31,7 @@ import { cn } from '@/lib/utils';
  */
 export function SidebarNav() {
   const pathname = usePathname();
-  const [logoSrc, setLogoSrc] = useState('/icon.png');
+  const [logoSrc, setLogoSrc] = useState('/icon.svg');
 
   const navItems = useMemo(
     () => [

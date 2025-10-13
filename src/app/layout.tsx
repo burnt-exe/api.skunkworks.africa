@@ -30,13 +30,13 @@ export const metadata: Metadata = {
   title: 'EasyFile – Effortless Document Generation',
   description:
     'Create professional invoices, purchase orders, receipts, and more with simplicity and precision using EasyFile.',
-  metadataBase: new URL('https://easyfile.app'), // ✅ helps with canonical + OG URLs
+  metadataBase: new URL('https://easyfile.skunkworks.africa'), // ✅ helps with canonical + OG URLs
   manifest: '/manifest.json',
   openGraph: {
     title: 'EasyFile – Effortless Document Generation',
     description:
       'Your one-stop solution for generating invoices, receipts, and business documents quickly and beautifully.',
-    url: 'https://easyfile.app',
+    url: 'https://easyfile.skunkworks.africa',
     siteName: 'EasyFile',
     type: 'website',
   },
