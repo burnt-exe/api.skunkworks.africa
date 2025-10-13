@@ -7,7 +7,6 @@
 @tailwind utilities;
 
 @layer base {
-  /* Default color scheme */
   :root {
     --background: 240 10% 96.1%;
     --foreground: 240 10% 3.9%;
@@ -15,23 +14,22 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 217 91% 60%;
+    --primary: 242.4 9.6% 39.2%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 217 91% 60%;
+    --accent: 122.4 39.4% 49.2%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 4 90% 58%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 217 91% 60%;
+    --ring: 242.4 9.6% 39.2%;
     --radius: 0.5rem;
   }
 
-  /* Dark mode color scheme */
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -39,28 +37,29 @@
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 217 91% 60%;
+    --primary: 242.4 9.6% 39.2%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 217 91% 60%;
+    --accent: 122.4 39.4% 49.2%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 4 90% 58%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 217 91% 60%;
+    --ring: 242.4 9.6% 39.2%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }
 
@@ -68,8 +67,8 @@
   /* Brand Text Gradient */
   .brand-text {
     background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)));
-    -webkit-background-clip: text;
     background-clip: text;
+    -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 }
