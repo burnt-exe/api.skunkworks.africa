@@ -69,7 +69,7 @@ export function SidebarNav() {
               height={36}
               priority
               className="object-contain drop-shadow-[0_0_6px_rgba(56,152,255,0.6)] group-hover:scale-110 transition-transform duration-300 ease-in-out"
-              onError={() => setLogoSrc('/icon.png')}
+              onError={() => setLogoSrc('/icon.svg')}
             />
           </div>
           <h1 className="text-lg font-semibold tracking-tight bg-gradient-to-r from-[#1D8EFF] to-[#00B4FF] bg-clip-text text-transparent group-data-[collapsible=icon]:hidden">

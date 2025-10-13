@@ -13,7 +13,7 @@ export default function LandingPage() {
      <div className="flex flex-col min-h-screen bg-background text-foreground -m-4 sm:-m-6 lg:-m-8">
       <header className="fixed top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-transparent">
         <Link href="/" className="flex items-center gap-2">
-            <Image src="/icon.png" alt="EasyFile Logo" width={32} height={32} />
+            <Image src="/icon.svg" alt="EasyFile Logo" width={32} height={32} />
             <h1 className="text-xl font-semibold">EasyFile</h1>
         </Link>
         <SidebarTrigger />
@@ -23,7 +23,7 @@ export default function LandingPage() {
           <Link href="/invoice" className="inline-block mb-6 md:mb-8">
              <div className="group rounded-full bg-primary/10 p-4 md:p-6 shadow-2xl backdrop-blur-md transform transition-transform duration-300 hover:scale-105">
                 <Image
-                    src="/icon.png"
+                    src="/icon.svg"
                     alt="EasyFile Logo"
                     width={96}
                     height={96}
@@ -52,14 +52,14 @@ export default function LandingPage() {
 
       <footer className="py-6 px-4 text-center text-xs sm:text-sm text-muted-foreground">
         <p>
-          Copyright &copy; 2024 <a href="https://easyfile.co.za" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground/80 hover:underline">easyfile.co.za</a>
+          Copyright &copy; 2024 <a href="https://easyfile.skunkworks.africa" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground/80 hover:underline">easyfile.co.za</a>
         </p>
         <div className="mt-2 space-x-2 sm:space-x-4">
-          <Link href="#" className="transition-colors duration-300 hover:text-foreground">
+          <Link href="https://www.skunkworks.africa/terms" className="transition-colors duration-300 hover:text-foreground">
             Terms of Service
           </Link>
           <span>&middot;</span>
-          <Link href="#" className="transition-colors duration-300 hover:text-foreground">
+          <Link href="https://www.skunkworks.africa/privacy" className="transition-colors duration-300 hover:text-foreground">
             Privacy Policy
           </Link>
         </div>

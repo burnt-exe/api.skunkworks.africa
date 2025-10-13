@@ -66,14 +66,19 @@ export default function PurchaseOrderPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     const keys = name.split('.');
-    if (keys.length > 1) {
-      setData((prev) => ({
-        ...prev,
-        [keys[0]]: { ...prev[keys[0] as keyof DocumentData], [keys[1]]: value },
-      }));
-    } else {
-      setData((prev) => ({ ...prev, [name]: value }));
-    }
+    
+    setData((prev) => {
+      const new_data = { ...prev };
+      if (keys.length > 1) {
+          const [parentKey, childKey] = keys as [keyof DocumentData, string];
+          if (typeof new_data[parentKey] === 'object' && new_data[parentKey] !== null) {
+              (new_data[parentKey] as any)[childKey] = value;
+          }
+      } else {
+          (new_data[name as keyof DocumentData] as any) = value;
+      }
+      return new_data;
+    });
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
