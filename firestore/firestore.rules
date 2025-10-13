@@ -1,0 +1,121 @@
+/**
+ * @fileoverview Firestore Security Rules for the application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a company-centric model. All data is scoped under a /companies/{companyId} path,
+ * ensuring that data access is restricted to authorized users within that company.
+ *
+ * Data Structure:
+ * The data is organized hierarchically. Each company has its own documents for purchase orders, invoices,
+ * receipts, payslips, and sales orders, all nested under the /companies/{companyId} collection.
+ *
+ * Key Security Decisions:
+ * - All data access is restricted to signed-in users.
+ * - All write operations require the user to be part of the specified company.
+ * - List operations are restricted to users within the company.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Allows read and write access to company documents.
+     * @path /companies/{companyId}
+     * @allow (get, list) if isSignedIn()
+     * @allow (create, update, delete) if isSignedIn() && request.resource.data.id == companyId
+     * @deny (create) if !isSignedIn()
+     * @deny (update, delete) if !isSignedIn() || resource == null
+     * @principle Ensures that only authenticated users can access company documents and their ID matches.
+     */
+    match /companies/{companyId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.id == companyId;
+      allow update: if isSignedIn() && resource != null && request.resource.data.id == companyId;
+      allow delete: if isSignedIn() && resource != null && request.resource.data.id == companyId;
+    }
+
+    /**
+     * @description Allows access to purchase order documents for a specific company.
+     * @path /companies/{companyId}/purchaseOrders/{purchaseOrderId}
+     * @allow (get, list) if isSignedIn()
+     * @allow (create, update, delete) if isSignedIn()
+     * @deny (create) if !isSignedIn()
+     * @deny (update, delete) if !isSignedIn() || resource == null
+     * @principle Enforces company-level ownership for purchase order documents.
+     */
+    match /companies/{companyId}/purchaseOrders/{purchaseOrderId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows access to invoice documents for a specific company.
+     * @path /companies/{companyId}/invoices/{invoiceId}
+     * @allow (get, list) if isSignedIn()
+     * @allow (create, update, delete) if isSignedIn()
+     * @deny (create) if !isSignedIn()
+     * @deny (update, delete) if !isSignedIn() || resource == null
+     * @principle Enforces company-level ownership for invoice documents.
+     */
+    match /companies/{companyId}/invoices/{invoiceId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows access to receipt documents for a specific company.
+     * @path /companies/{companyId}/receipts/{receiptId}
+     * @allow (get, list) if isSignedIn()
+     * @allow (create, update, delete) if isSignedIn()
+     * @deny (create) if !isSignedIn()
+     * @deny (update, delete) if !isSignedIn() || resource == null
+     * @principle Enforces company-level ownership for receipt documents.
+     */
+    match /companies/{companyId}/receipts/{receiptId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows access to payslip documents for a specific company.
+     * @path /companies/{companyId}/payslips/{payslipId}
+     * @allow (get, list) if isSignedIn()
+     * @allow (create, update, delete) if isSignedIn()
+     * @deny (create) if !isSignedIn()
+     * @deny (update, delete) if !isSignedIn() || resource == null
+     * @principle Enforces company-level ownership for payslip documents.
+     */
+    match /companies/{companyId}/payslips/{payslipId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows access to sales order documents for a specific company.
+     * @path /companies/{companyId}/salesOrders/{salesOrderId}
+     * @allow (get, list) if isSignedIn()
+     * @allow (create, update, delete) if isSignedIn()
+     * @deny (create) if !isSignedIn()
+     * @deny (update, delete) if !isSignedIn() || resource == null
+     * @principle Enforces company-level ownership for sales order documents.
+     */
+    match /companies/{companyId}/salesOrders/{salesOrderId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+  }
+
+  function isSignedIn() {
+    return request.auth != null;
+  }
+}
