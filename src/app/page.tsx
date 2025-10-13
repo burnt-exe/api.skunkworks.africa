@@ -2,7 +2,6 @@
 'use client';
 
 import Link from 'next/link';
-import { Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import Image from 'next/image';
@@ -11,10 +10,10 @@ export const dynamic = 'force-dynamic';
 
 export default function LandingPage() {
   return (
-     <div className="flex flex-col min-h-screen bg-[#1a1a1a] text-white -m-4 sm:-m-6 lg:-m-8">
+     <div className="flex flex-col min-h-screen bg-background text-foreground -m-4 sm:-m-6 lg:-m-8">
       <header className="fixed top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-transparent">
         <Link href="/" className="flex items-center gap-2">
-            <Image src="/icon.svg" alt="EasyFile Logo" width={32} height={32} className="text-primary" />
+            <Image src="/icon.png" alt="EasyFile Logo" width={32} height={32} />
             <h1 className="text-xl font-semibold">EasyFile</h1>
         </Link>
         <SidebarTrigger />
@@ -22,8 +21,14 @@ export default function LandingPage() {
       <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
         <div className="max-w-4xl mx-auto">
           <Link href="/invoice" className="inline-block mb-6 md:mb-8">
-             <div className="group rounded-full bg-white/10 p-4 md:p-6 shadow-2xl backdrop-blur-md transform transition-transform duration-300 hover:scale-105 animate-pulse-slow">
-                <Briefcase className="h-16 w-16 md:h-24 md:w-24 text-white transition-transform duration-300 group-hover:scale-110" />
+             <div className="group rounded-full bg-primary/10 p-4 md:p-6 shadow-2xl backdrop-blur-md transform transition-transform duration-300 hover:scale-105">
+                <Image
+                    src="/icon.png"
+                    alt="EasyFile Logo"
+                    width={96}
+                    height={96}
+                    className="transition-transform duration-300 group-hover:scale-110"
+                />
             </div>
           </Link>
 
@@ -31,7 +36,7 @@ export default function LandingPage() {
             Effortless Document Generation
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl text-white/70 max-w-xs sm:max-w-lg md:max-w-2xl mx-auto mb-6 md:mb-8">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xs sm:max-w-lg md:max-w-2xl mx-auto mb-6 md:mb-8">
             Welcome to EasyFile. Your one-stop solution for creating professional invoices, purchase orders, receipts, and more with unparalleled ease.
           </p>
 
@@ -45,16 +50,16 @@ export default function LandingPage() {
         </div>
       </main>
 
-      <footer className="py-6 px-4 text-center text-xs sm:text-sm text-white/50">
+      <footer className="py-6 px-4 text-center text-xs sm:text-sm text-muted-foreground">
         <p>
-          Copyright &copy; 2024 <a href="https://easyfile.co.za" target="_blank" rel="noopener noreferrer" className="font-semibold text-white/80 hover:underline">easyfile.co.za</a>
+          Copyright &copy; 2024 <a href="https://easyfile.co.za" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground/80 hover:underline">easyfile.co.za</a>
         </p>
         <div className="mt-2 space-x-2 sm:space-x-4">
-          <Link href="#" className="transition-colors duration-300 hover:text-white">
+          <Link href="#" className="transition-colors duration-300 hover:text-foreground">
             Terms of Service
           </Link>
           <span>&middot;</span>
-          <Link href="#" className="transition-colors duration-300 hover:text-white">
+          <Link href="#" className="transition-colors duration-300 hover:text-foreground">
             Privacy Policy
           </Link>
         </div>
