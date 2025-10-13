@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export default function LandingPage() {
   return (
-     <div className="flex flex-col min-h-screen bg-background text-foreground -m-4 sm:-m-6 lg:-m-8">
+     <div className="flex flex-col min-h-screen bg-background text-foreground px-4 sm:px-6 lg:px-8">
       <header className="fixed top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-transparent">
         <Link href="/" className="flex items-center gap-2">
             <Image src="/icon.svg" alt="EasyFile Logo" width={32} height={32} />
@@ -52,14 +52,14 @@ export default function LandingPage() {
 
       <footer className="py-6 px-4 text-center text-xs sm:text-sm text-muted-foreground">
         <p>
-          Copyright &copy; 2024 <a href="https://easyfile.skunkworks.africa" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground/80 hover:underline">easyfile.co.za</a>
+          Copyright &copy; 2024 <a href="https://easyfile.skunkworks.africa" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground/80 hover:underline">https://easyfile.skunkworks.africa</a>
         </p>
         <div className="mt-2 space-x-2 sm:space-x-4">
-          <Link href="https://www.skunkworks.africa/terms" className="transition-colors duration-300 hover:text-foreground">
+          <Link href="https://easyfile.skunkworks.africa/terms" className="transition-colors duration-300 hover:text-foreground">
             Terms of Service
           </Link>
           <span>&middot;</span>
-          <Link href="https://www.skunkworks.africa/privacy" className="transition-colors duration-300 hover:text-foreground">
+          <Link href="https://easyfile.skunkworks.africa/privacy" className="transition-colors duration-300 hover:text-foreground">
             Privacy Policy
           </Link>
         </div>
