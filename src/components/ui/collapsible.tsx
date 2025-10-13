@@ -4,43 +4,68 @@ import * as React from 'react';
 import * as CollapsiblePrimitive from '@radix-ui/react-collapsible';
 import { cn } from '@/lib/utils';
 
-// Root wrapper (unchanged)
+/**
+ * Collapsible — a composable wrapper around Radix's Collapsible primitives.
+ * Provides animated open/close transitions and a styled trigger/content API.
+ *
+ * Usage:
+ *  <Collapsible>
+ *    <CollapsibleTrigger>Toggle</CollapsibleTrigger>
+ *    <CollapsibleContent>Hidden content here</CollapsibleContent>
+ *  </Collapsible>
+ */
+
+// Root container (unchanged, just re-exported for clarity)
 const Collapsible = CollapsiblePrimitive.Root;
 
-// Trigger with optional animation/hover effects
+// ---------------------------------------------------------------------------
+// Trigger
+// ---------------------------------------------------------------------------
 const CollapsibleTrigger = React.forwardRef<
-  React.ElementRef<typeof CollapsiblePrimitive.CollapsibleTrigger>,
-  React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.CollapsibleTrigger>
+  React.ElementRef<typeof CollapsiblePrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Trigger>
 >(({ className, children, ...props }, ref) => (
-  <CollapsiblePrimitive.CollapsibleTrigger
+  <CollapsiblePrimitive.Trigger
     ref={ref}
     className={cn(
-      'flex items-center justify-between w-full rounded-md px-3 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors duration-200',
+      'flex items-center justify-between w-full rounded-md px-3 py-2 text-sm font-medium text-white/80',
+      'hover:text-white hover:bg-white/10 transition-colors duration-200 select-none',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
       className
     )}
     {...props}
   >
     {children}
-  </CollapsiblePrimitive.CollapsibleTrigger>
+  </CollapsiblePrimitive.Trigger>
 ));
-CollapsibleTrigger.displayName = CollapsiblePrimitive.CollapsibleTrigger.displayName;
 
-// Animated content
+CollapsibleTrigger.displayName = 'CollapsibleTrigger';
+
+// ---------------------------------------------------------------------------
+// Content
+// ---------------------------------------------------------------------------
 const CollapsibleContent = React.forwardRef<
-  React.ElementRef<typeof CollapsiblePrimitive.CollapsibleContent>,
-  React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.CollapsibleContent>
+  React.ElementRef<typeof CollapsiblePrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Content>
 >(({ className, children, ...props }, ref) => (
-  <CollapsiblePrimitive.CollapsibleContent
+  <CollapsiblePrimitive.Content
     ref={ref}
     className={cn(
-      'overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down transition-all duration-300',
+      'overflow-hidden',
+      // smooth height transitions + fade effect
+      'data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up',
+      'transition-all duration-300 ease-out',
       className
     )}
     {...props}
   >
-    {children}
-  </CollapsiblePrimitive.CollapsibleContent>
+    <div className="pt-2">{children}</div>
+  </CollapsiblePrimitive.Content>
 ));
-CollapsibleContent.displayName = CollapsiblePrimitive.CollapsibleContent.displayName;
 
+CollapsibleContent.displayName = 'CollapsibleContent';
+
+// ---------------------------------------------------------------------------
+// Exports
+// ---------------------------------------------------------------------------
 export { Collapsible, CollapsibleTrigger, CollapsibleContent };

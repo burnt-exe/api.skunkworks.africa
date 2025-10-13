@@ -1,23 +1,38 @@
-
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
+
+interface ClientOnlyProps {
+  children: React.ReactNode;
+  /**
+   * Optional fallback element to render on the server (before hydration).
+   * Useful for showing loading placeholders or avoiding layout shifts.
+   */
+  fallback?: React.ReactNode;
+}
 
 /**
- * A component that only renders its children on the client-side after mounting.
- * This is useful to prevent hydration mismatch errors when a component relies on
- * browser-specific APIs (like window) that are not available on the server.
+ * ClientOnly
+ * --------------------------------------------------------------------------
+ * Ensures children render **only** after the component mounts on the client.
+ * Prevents hydration mismatches for components using browser-only APIs
+ * (e.g., `window`, `localStorage`, `matchMedia`, etc.).
+ *
+ * Example:
+ *   <ClientOnly fallback={<Spinner />}>
+ *     <DynamicMap />
+ *   </ClientOnly>
  */
-export default function ClientOnly({ children }: { children: React.ReactNode }) {
-  const [hasMounted, setHasMounted] = useState(false);
+function ClientOnly({ children, fallback = null }: ClientOnlyProps) {
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setHasMounted(true);
+    setMounted(true);
   }, []);
 
-  if (!hasMounted) {
-    return null;
-  }
+  if (!mounted) return <>{fallback}</>;
 
   return <>{children}</>;
 }
+
+export default memo(ClientOnly);

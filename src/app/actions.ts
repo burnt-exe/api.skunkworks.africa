@@ -1,38 +1,80 @@
 'use server';
 
-import { suggestItems, type SuggestItemsInput } from '@/ai/flows/suggest-items';
-import { generateLandingPageImage, type GenerateLandingPageImageInput } from '@/ai/flows/generate-landing-page-image';
-import { convertBankStatement, type ConvertBankStatementInput } from '@/ai/flows/convert-bank-statement-flow';
+import {
+  suggestItems,
+  type SuggestItemsInput,
+} from '@/ai/flows/suggest-items';
+import {
+  generateLandingPageImage,
+  type GenerateLandingPageImageInput,
+} from '@/ai/flows/generate-landing-page-image';
+import {
+  convertBankStatement,
+  type ConvertBankStatementInput,
+} from '@/ai/flows/convert-bank-statement-flow';
 
-export async function suggestItemsAction(input: SuggestItemsInput) {
+/**
+ * Standardized server action response shape.
+ */
+interface ServerActionResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+/**
+ * Unified error handler — ensures consistent logs & messages.
+ */
+function handleActionError(context: string, error: unknown): ServerActionResponse<never> {
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === 'string'
+      ? error
+      : 'An unknown error occurred.';
+
+  console.error(`[${context}]`, error);
+  return { success: false, error: `${context}: ${message}` };
+}
+
+/**
+ * Suggest AI-driven item recommendations based on input criteria.
+ */
+export async function suggestItemsAction(
+  input: SuggestItemsInput,
+): Promise<ServerActionResponse<Awaited<ReturnType<typeof suggestItems>>>> {
   try {
-    const suggestions = await suggestItems(input);
-    return { success: true, data: suggestions };
+    const data = await suggestItems(input);
+    return { success: true, data };
   } catch (error) {
-    console.error(error);
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-    return { success: false, error: `Failed to get suggestions: ${errorMessage}` };
+    return handleActionError('Failed to get suggestions', error);
   }
 }
 
-export async function generateLandingPageImageAction(input: GenerateLandingPageImageInput) {
-    try {
-        const result = await generateLandingPageImage(input);
-        return { success: true, data: result };
-    } catch (error) {
-        console.error(error);
-        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-        return { success: false, error: `Failed to generate image: ${errorMessage}` };
-    }
+/**
+ * Generate AI-powered landing page imagery (marketing visuals, banners, etc.).
+ */
+export async function generateLandingPageImageAction(
+  input: GenerateLandingPageImageInput,
+): Promise<ServerActionResponse<Awaited<ReturnType<typeof generateLandingPageImage>>>> {
+  try {
+    const data = await generateLandingPageImage(input);
+    return { success: true, data };
+  } catch (error) {
+    return handleActionError('Failed to generate image', error);
+  }
 }
 
-export async function convertBankStatementAction(input: ConvertBankStatementInput) {
-    try {
-        const result = await convertBankStatement(input);
-        return { success: true, data: result };
-    } catch(error) {
-        console.error('Error during bank statement conversion:', error);
-        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during conversion.';
-        return { success: false, error: errorMessage };
-    }
+/**
+ * Convert uploaded bank statement PDFs into structured financial data.
+ */
+export async function convertBankStatementAction(
+  input: ConvertBankStatementInput,
+): Promise<ServerActionResponse<Awaited<ReturnType<typeof convertBankStatement>>>> {
+  try {
+    const data = await convertBankStatement(input);
+    return { success: true, data };
+  } catch (error) {
+    return handleActionError('Error during bank statement conversion', error);
+  }
 }

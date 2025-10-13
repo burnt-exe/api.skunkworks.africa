@@ -1,68 +1,104 @@
-/* 
-  NOTE: The '@tailwind' and '@apply' directives are specific to Tailwind CSS and may be flagged
-  by standard CSS linters. These are not errors and are processed correctly by the build tool.
-*/
+/* ==========================================================================
+   Global Tailwind Layers for EasyFile
+   --------------------------------------------------------------------------
+   The @tailwind and @apply directives are handled by PostCSS/Tailwind build
+   tools. Linters may flag them; these are not errors.
+   ========================================================================== */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* -------------------------------------------------------------------------- */
+/* Base Layer – Theme Variables                                               */
+/* -------------------------------------------------------------------------- */
 @layer base {
   :root {
+    /* Light mode color tokens */
     --background: 240 10% 96.1%;
     --foreground: 240 10% 3.9%;
+
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
+
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
+
     --primary: 242.4 9.6% 39.2%;
     --primary-foreground: 0 0% 98%;
+
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
+
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
+
     --accent: 122.4 39.4% 49.2%;
     --accent-foreground: 0 0% 98%;
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
+
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 242.4 9.6% 39.2%;
     --radius: 0.5rem;
   }
 
+  /* Dark theme overrides */
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
+
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
+
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
+
     --primary: 242.4 9.6% 39.2%;
     --primary-foreground: 0 0% 98%;
+
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
+
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
+
     --accent: 122.4 39.4% 49.2%;
     --accent-foreground: 0 0% 98%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
+
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 242.4 9.6% 39.2%;
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Base Styles                                                                */
+/* -------------------------------------------------------------------------- */
 @layer base {
   * {
     border-color: hsl(var(--border));
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    @apply antialiased font-sans;
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Components                                                                 */
+/* -------------------------------------------------------------------------- */
 @layer components {
   /* Brand Text Gradient */
   .brand-text {
@@ -73,19 +109,25 @@
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Utilities                                                                  */
+/* -------------------------------------------------------------------------- */
 @layer utilities {
-    /* Collapsible Animations */
+  /* Collapsible Animations */
   @keyframes collapsible-down {
     from { height: 0; opacity: 0; }
     to { height: var(--radix-collapsible-content-height); opacity: 1; }
   }
+
   @keyframes collapsible-up {
     from { height: var(--radix-collapsible-content-height); opacity: 1; }
     to { height: 0; opacity: 0; }
   }
+
   .animate-collapsible-down {
     animation: collapsible-down 0.25s ease-out;
   }
+
   .animate-collapsible-up {
     animation: collapsible-up 0.2s ease-in;
   }

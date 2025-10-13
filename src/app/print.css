@@ -1,27 +1,78 @@
+/* ==========================================================================
+   Print Styles for EasyFile
+   ========================================================================== */
+
 @media print {
-  body * {
-    visibility: hidden;
+  /* Ensure color fidelity and remove web rendering quirks */
+  * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    color-adjust: exact !important; /* legacy fallback */
   }
 
-  .printable-area, .printable-area * {
-    visibility: visible;
+  /* Hide all elements by default to isolate printable area */
+  body * {
+    visibility: hidden !important;
   }
 
+  /* Reveal only the printable area */
+  .printable-area,
+  .printable-area * {
+    visibility: visible !important;
+  }
+
+  /* Position printable area at the top-left corner */
   .printable-area {
-    position: absolute;
-    left: 0;
+    position: absolute !important;
     top: 0;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
+    left: 0;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
     border: none !important;
     box-shadow: none !important;
+    background: white !important;
+    overflow: visible !important;
   }
 
+  /* Hide anything marked as non-printable */
   .print-hide {
     display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Optional: prevent page breaks inside elements */
+  .no-break {
+    page-break-inside: avoid;
+  }
+
+  /* Optional: define A4-like padding and scaling */
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  /* Typography cleanup for printed text */
+  body {
+    font-family: 'Roboto', sans-serif;
+    font-size: 12pt;
+    line-height: 1.4;
+    background: none !important;
+  }
+
+  /* Links appear as plain text in print */
+  a {
+    text-decoration: none !important;
+    color: black !important;
+  }
+
+  /* Remove shadows and animations that don’t print well */
+  .shadow, .shadow-lg, .shadow-md {
+    box-shadow: none !important;
+  }
+  * {
+    animation: none !important;
+    transition: none !important;
   }
 }

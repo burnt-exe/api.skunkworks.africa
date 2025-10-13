@@ -1,51 +1,76 @@
-
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import './print.css';
+
 import { Toaster } from '@/components/ui/toaster';
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/sidebar-nav';
 import { FirebaseClientProvider } from '@/firebase';
 import ClientOnly from '@/components/client-only';
 
+// Load fonts via Next.js font optimization (faster + preloaded)
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-body',
+  display: 'swap',
+});
+
+
 export const metadata: Metadata = {
-  title: 'EasyFile - Effortless Document Generation',
-  description: 'Your one-stop solution for creating professional invoices, purchase orders, receipts, and more with unparalleled ease.',
+  title: 'EasyFile – Effortless Document Generation',
+  description:
+    'Create professional invoices, purchase orders, receipts, and more with simplicity and precision using EasyFile.',
+  metadataBase: new URL('https://easyfile.app'), // ✅ helps with canonical + OG URLs
+  openGraph: {
+    title: 'EasyFile – Effortless Document Generation',
+    description:
+      'Your one-stop solution for generating invoices, receipts, and business documents quickly and beautifully.',
+    url: 'https://easyfile.app',
+    siteName: 'EasyFile',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'EasyFile – Document Automation Made Simple',
+    description:
+      'Create, manage, and export business documents with ease.',
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="font-body antialiased">
+      <body
+        className={`${inter.variable} font-body antialiased bg-background text-foreground min-h-screen`}
+      >
+        {/* Client-side Firebase context */}
         <FirebaseClientProvider>
           <SidebarProvider>
-            <div className="flex">
+            <div className="flex min-h-screen">
+              {/* Sidebar rendered client-side only to avoid SSR mismatch */}
               <ClientOnly>
                 <Sidebar collapsible="icon">
                   <SidebarNav />
                 </Sidebar>
+
                 <SidebarInset>
-                    <main className="p-4 sm:p-6 lg:p-8">
-                        {children}
-                    </main>
+                  <main className="flex-1 p-4 sm:p-6 lg:p-8">
+                    {children}
+                  </main>
                 </SidebarInset>
               </ClientOnly>
             </div>
           </SidebarProvider>
+
+          {/* Toast notifications always client-side */}
+          <Toaster />
         </FirebaseClientProvider>
-        <Toaster />
       </body>
     </html>
   );
