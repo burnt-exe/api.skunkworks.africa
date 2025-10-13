@@ -14,4 +14,4 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', service: 'skunkworks-api', environment: process.env.NODE_ENV });
 });
 
-app.listen(PORT, () => console.log(\`🚀 Skunkworks API running on port \${PORT}\`));
+app.listen(PORT, () => console.log(`🚀 Skunkworks API running on port ${PORT}`));

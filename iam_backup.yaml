@@ -1,0 +1,77 @@
+bindings:
+- members:
+  - serviceAccount:service-837078045227@gcp-sa-artifactregistry.iam.gserviceaccount.com
+  role: roles/artifactregistry.serviceAgent
+- members:
+  - serviceAccount:837078045227@cloudbuild.gserviceaccount.com
+  role: roles/cloudbuild.builds.builder
+- members:
+  - serviceAccount:837078045227-compute@developer.gserviceaccount.com
+  - serviceAccount:837078045227@cloudbuild.gserviceaccount.com
+  - serviceAccount:service-837078045227@gcp-sa-firebaseapphosting.iam.gserviceaccount.com
+  role: roles/cloudbuild.builds.editor
+- condition:
+    expression: request.time < timestamp("2025-10-13T11:36:02.661Z")
+    title: developer-connect-connection-setup
+  members:
+  - serviceAccount:837078045227@cloudbuild.gserviceaccount.com
+  - serviceAccount:service-837078045227@gcp-sa-firebaseapphosting.iam.gserviceaccount.com
+  role: roles/cloudbuild.builds.editor
+- members:
+  - serviceAccount:service-837078045227@gcp-sa-cloudbuild.iam.gserviceaccount.com
+  role: roles/cloudbuild.serviceAgent
+- members:
+  - serviceAccount:service-837078045227@containerregistry.iam.gserviceaccount.com
+  role: roles/containerregistry.ServiceAgent
+- members:
+  - serviceAccount:service-837078045227@gcp-sa-devconnect.iam.gserviceaccount.com
+  role: roles/developerconnect.serviceAgent
+- members:
+  - serviceAccount:service-837078045227@gcp-sa-firebase.iam.gserviceaccount.com
+  role: roles/firebase.managementServiceAgent
+- members:
+  - serviceAccount:firebase-adminsdk-fbsvc@easyfilev20-27833257-6347a.iam.gserviceaccount.com
+  - serviceAccount:firebase-app-hosting-compute@easyfilev20-27833257-6347a.iam.gserviceaccount.com
+  role: roles/firebase.sdkAdminServiceAgent
+- members:
+  - serviceAccount:firebase-app-hosting-compute@easyfilev20-27833257-6347a.iam.gserviceaccount.com
+  role: roles/firebaseapphosting.computeRunner
+- members:
+  - serviceAccount:service-837078045227@gcp-sa-firebaseapphosting.iam.gserviceaccount.com
+  role: roles/firebaseapphosting.serviceAgent
+- members:
+  - serviceAccount:firebase-adminsdk-fbsvc@easyfilev20-27833257-6347a.iam.gserviceaccount.com
+  role: roles/iam.serviceAccountTokenCreator
+- members:
+  - serviceAccount:837078045227@cloudbuild.gserviceaccount.com
+  role: roles/logging.logWriter
+- members:
+  - user:raydo@skunkworks.africa
+  role: roles/owner
+- members:
+  - serviceAccount:837078045227-compute@developer.gserviceaccount.com
+  - serviceAccount:837078045227@cloudbuild.gserviceaccount.com
+  - serviceAccount:service-837078045227@gcp-sa-firebaseapphosting.iam.gserviceaccount.com
+  role: roles/run.admin
+- members:
+  - serviceAccount:service-837078045227@serverless-robot-prod.iam.gserviceaccount.com
+  role: roles/run.serviceAgent
+- condition:
+    expression: request.time < timestamp("2025-10-13T11:36:02.661Z")
+    title: developer-connect-connection-setup
+  members:
+  - serviceAccount:service-837078045227@gcp-sa-devconnect.iam.gserviceaccount.com
+  role: roles/secretmanager.admin
+- members:
+  - serviceAccount:837078045227-compute@developer.gserviceaccount.com
+  - serviceAccount:837078045227@cloudbuild.gserviceaccount.com
+  - serviceAccount:service-837078045227@gcp-sa-firebaseapphosting.iam.gserviceaccount.com
+  role: roles/storage.admin
+- condition:
+    expression: request.time < timestamp("2025-10-13T11:36:02.661Z")
+    title: developer-connect-connection-setup
+  members:
+  - serviceAccount:service-837078045227@gcp-sa-firebaseapphosting.iam.gserviceaccount.com
+  role: roles/storage.admin
+etag: BwZBCQ_rM6s=
+version: 3
