@@ -98,7 +98,7 @@ export default function EasyDocuConvertPage() {
   return (
     <div className="space-y-6">
        <div className="flex items-center gap-4">
-        <Image src="/rambrass-logo.svg" alt="RAMBRASS Logo" width={60} height={60} />
+        <Image src="/icon.svg" alt="EasyFile Logo" width={60} height={60} />
          <div>
             <h1 className="text-2xl font-bold tracking-tight" style={{fontFamily: "'Space Grotesk', sans-serif"}}>EasyDocuConvert</h1>
             <p className="text-muted-foreground" style={{fontFamily: "'Inter', sans-serif"}}>
