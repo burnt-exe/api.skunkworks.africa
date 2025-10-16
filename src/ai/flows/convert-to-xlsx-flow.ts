@@ -17,7 +17,7 @@ import type { DocumentData } from '@/types';
 // This is a simplified version. A complete one would be more complex.
 const DocumentDataSchema = z.custom<DocumentData>();
 
-export const ConvertToXlsxInputSchema = DocumentDataSchema;
+const ConvertToXlsxInputSchema = DocumentDataSchema;
 export type ConvertToXlsxInput = z.infer<typeof ConvertToXlsxInputSchema>;
 
 const ConvertToXlsxOutputSchema = z.object({
