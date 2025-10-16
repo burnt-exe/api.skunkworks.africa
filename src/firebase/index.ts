@@ -9,6 +9,13 @@ import {
 } from "firebase/firestore";
 import { getAuth, browserLocalPersistence, setPersistence } from "firebase/auth";
 import { getStorage } from "firebase/storage";
+export { FirebaseClientProvider } from './client-provider';
+export * from './provider';
+export * from './firestore/use-collection';
+export * from './firestore/use-doc';
+export * from './non-blocking-login';
+export * from './non-blocking-updates';
+
 
 // --- Firebase configuration (public keys) ---
 const firebaseConfig = {
@@ -48,5 +55,10 @@ if (typeof window !== "undefined") {
     if (supported) analytics = getAnalytics(app);
   });
 }
+
+export function initializeFirebase() {
+    return { firebaseApp: app, firestore: db, auth };
+}
+
 
 export { app, db, auth, storage, analytics };
