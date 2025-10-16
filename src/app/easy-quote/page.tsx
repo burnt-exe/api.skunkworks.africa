@@ -1,32 +1,47 @@
-
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import React, { useState, useTransition, useEffect } from 'react';
 import type { DocumentData, LineItem } from '@/types';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import DocumentPreview from '@/components/document-preview';
 import { suggestItemsAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Sparkles, Trash2, LoaderCircle, Printer, Download, Upload, ChevronDown } from 'lucide-react';
-import React from 'react';
+import {
+  PlusCircle,
+  Sparkles,
+  Trash2,
+  LoaderCircle,
+  Printer,
+  Download,
+  Upload,
+  ChevronDown,
+} from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
+// ────────────────────────────────────────────────
+// ✅ Initial Data Template
+// ────────────────────────────────────────────────
 const initialData: DocumentData = {
   title: 'QUOTE',
   logoUrl: '',
   from: { name: 'Your Company', address: '123 Main St, Anytown, USA' },
   to: { name: 'Client Company', address: '456 Oak Ave, Otherville, USA' },
-  details: {
-    label: 'Quote No.',
-    value: '',
-  },
+  details: { label: 'Quote No.', value: '' },
   date: '',
   dueDate: '',
   lineItems: [
@@ -40,43 +55,65 @@ const initialData: DocumentData = {
     accountName: 'Your Company Inc.',
     accountNumber: '1234567890',
     sortCode: '12-34-56',
-  }
+  },
 };
 
 export const dynamic = 'force-dynamic';
 
+// ────────────────────────────────────────────────
+// ✅ Quote Page Component
+// ────────────────────────────────────────────────
 export default function QuotePage() {
   const [data, setData] = useState<DocumentData>(initialData);
-
-  useEffect(() => {
-    // Generate these values only on the client-side to avoid hydration errors
-    setData((prev) => ({
-      ...prev,
-      details: {
-        ...prev.details,
-        value: `QT-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
-      },
-      date: new Date().toISOString().split('T')[0],
-      dueDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0],
-    }));
-  }, []);
-
   const [aiState, setAiState] = useState({ businessType: 'Consulting', vatRate: '20' });
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // ────────────────────────────────────────────────
+  // ✅ Initialize dates and quote number
+  // ────────────────────────────────────────────────
+  useEffect(() => {
+    setData((prev) => ({
+      ...prev,
+      details: {
+        ...prev.details,
+        value: `QT-${new Date().getFullYear()}-${String(
+          Math.floor(Math.random() * 9000) + 1000
+        )}`,
+      },
+      date: new Date().toISOString().split('T')[0],
+      dueDate: new Date(
+        new Date().setDate(new Date().getDate() + 30)
+      ).toISOString().split('T')[0],
+    }));
+  }, []);
+
+  // ────────────────────────────────────────────────
+  // ✅ Type-safe state update helpers
+  // ────────────────────────────────────────────────
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     const keys = name.split('.');
-    if (keys.length > 1) {
-      setData((prev) => ({
-        ...prev,
-        [keys[0]]: { ...prev[keys[0] as keyof DocumentData], [keys[1]]: value },
-      }));
-    } else {
-      setData((prev) => ({ ...prev, [name]: value }));
-    }
+
+    setData((prev) => {
+      if (keys.length > 1) {
+        const [parent, child] = keys;
+        const parentValue = prev[parent as keyof DocumentData];
+        return {
+          ...prev,
+          [parent]: {
+            ...(typeof parentValue === 'object' && parentValue !== null
+              ? parentValue
+              : {}),
+            [child]: value,
+          },
+        };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,31 +121,50 @@ export default function QuotePage() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setData(prev => ({ ...prev, logoUrl: reader.result as string }));
+        setData((prev) => ({ ...prev, logoUrl: reader.result as string }));
+      };
+      reader.onerror = () => {
+        toast({
+          title: 'Upload failed',
+          description: 'An error occurred while reading the file.',
+          variant: 'destructive',
+        });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleLineItemChange = (index: number, field: keyof LineItem, value: string | number) => {
-    const newLineItems = [...data.lineItems];
-    const parsedValue = typeof value === 'string' && field !== 'description' ? parseFloat(value) : value;
-    newLineItems[index] = { ...newLineItems[index], [field]: parsedValue };
-    setData((prev) => ({ ...prev, lineItems: newLineItems }));
+  const handleLineItemChange = (
+    index: number,
+    field: keyof LineItem,
+    value: string | number
+  ) => {
+    setData((prev) => {
+      const updated = [...prev.lineItems];
+      const parsedValue =
+        typeof value === 'string' && field !== 'description'
+          ? parseFloat(value) || 0
+          : value;
+      updated[index] = { ...updated[index], [field]: parsedValue };
+      return { ...prev, lineItems: updated };
+    });
   };
 
-  const addLineItem = () => {
+  const addLineItem = () =>
     setData((prev) => ({
       ...prev,
       lineItems: [...prev.lineItems, { description: '', quantity: 1, price: 0 }],
     }));
-  };
 
-  const removeLineItem = (index: number) => {
-    const newLineItems = data.lineItems.filter((_, i) => i !== index);
-    setData((prev) => ({ ...prev, lineItems: newLineItems }));
-  };
+  const removeLineItem = (index: number) =>
+    setData((prev) => ({
+      ...prev,
+      lineItems: prev.lineItems.filter((_, i) => i !== index),
+    }));
 
+  // ────────────────────────────────────────────────
+  // ✅ AI Suggestion Handler
+  // ────────────────────────────────────────────────
   const handleAiSuggest = () => {
     startTransition(async () => {
       const result = await suggestItemsAction({
@@ -118,28 +174,36 @@ export default function QuotePage() {
       if (result.success && result.data) {
         setData((prev) => ({ ...prev, lineItems: result.data! }));
         toast({
-          title: 'Success',
-          description: 'AI has suggested new line items.',
+          title: 'AI Updated Line Items',
+          description: 'New suggestions added successfully.',
           variant: 'default',
         });
       } else {
         toast({
           title: 'Error',
-          description: result.error,
+          description: result.error || 'AI suggestion failed.',
           variant: 'destructive',
         });
       }
     });
   };
 
+  // ────────────────────────────────────────────────
+  // ✅ UI Rendering
+  // ────────────────────────────────────────────────
   return (
     <div className="grid h-full min-h-[calc(100vh-4rem)] grid-cols-1 gap-8 lg:grid-cols-2">
+      {/* Left Side – Form */}
       <ScrollArea className="h-full max-h-[calc(100vh-4rem)] rounded-lg border bg-card shadow-sm">
         <div className="p-6">
           <h1 className="text-2xl font-bold">Quote Details</h1>
-          <p className="text-muted-foreground">Fill in the details to generate your quote.</p>
+          <p className="text-muted-foreground">
+            Fill in the details to generate your quote.
+          </p>
           <Separator className="my-6" />
+
           <div className="space-y-6">
+            {/* ───── AI Assistant ───── */}
             <Collapsible asChild>
               <Card>
                 <CollapsibleTrigger className="w-full">
@@ -156,7 +220,9 @@ export default function QuotePage() {
                         <Input
                           id="businessType"
                           value={aiState.businessType}
-                          onChange={(e) => setAiState({ ...aiState, businessType: e.target.value })}
+                          onChange={(e) =>
+                            setAiState({ ...aiState, businessType: e.target.value })
+                          }
                         />
                       </div>
                       <div>
@@ -165,7 +231,9 @@ export default function QuotePage() {
                           id="vatRateAi"
                           type="number"
                           value={aiState.vatRate}
-                          onChange={(e) => setAiState({ ...aiState, vatRate: e.target.value })}
+                          onChange={(e) =>
+                            setAiState({ ...aiState, vatRate: e.target.value })
+                          }
                         />
                       </div>
                     </div>
@@ -182,6 +250,7 @@ export default function QuotePage() {
               </Card>
             </Collapsible>
 
+            {/* ───── Company Info ───── */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="from.name">From</Label>
@@ -217,30 +286,35 @@ export default function QuotePage() {
               </div>
             </div>
 
+            {/* ───── Logo Upload ───── */}
             <div className="space-y-2">
               <Label htmlFor="logoUrl">Company Logo</Label>
               <div className="flex items-center gap-4">
                 <Input
-                    id="logoUrl"
-                    name="logoUrl"
-                    placeholder="https://your-logo.com/logo.png"
-                    value={data.logoUrl}
-                    onChange={handleInputChange}
-                    className="flex-grow"
+                  id="logoUrl"
+                  name="logoUrl"
+                  placeholder="https://your-logo.com/logo.png"
+                  value={data.logoUrl}
+                  onChange={handleInputChange}
+                  className="flex-grow"
                 />
-                <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="mr-2 h-4 w-4" /> Upload
+                <Button
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="mr-2 h-4 w-4" /> Upload
                 </Button>
                 <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleLogoUpload}
-                    className="hidden"
-                    accept="image/*"
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                  accept="image/*"
                 />
-                </div>
+              </div>
             </div>
-            
+
+            {/* ───── Quote Details ───── */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <div className="space-y-2">
                 <Label htmlFor="details.value">Quote Number</Label>
@@ -253,14 +327,27 @@ export default function QuotePage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="date">Issue Date</Label>
-                <Input id="date" name="date" type="date" value={data.date} onChange={handleInputChange} />
+                <Input
+                  id="date"
+                  name="date"
+                  type="date"
+                  value={data.date}
+                  onChange={handleInputChange}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="dueDate">Valid Until</Label>
-                <Input id="dueDate" name="dueDate" type="date" value={data.dueDate} onChange={handleInputChange} />
+                <Input
+                  id="dueDate"
+                  name="dueDate"
+                  type="date"
+                  value={data.dueDate}
+                  onChange={handleInputChange}
+                />
               </div>
             </div>
 
+            {/* ───── Line Items ───── */}
             <div>
               <Label>Line Items</Label>
               <Table>
@@ -269,7 +356,7 @@ export default function QuotePage() {
                     <TableHead>Description</TableHead>
                     <TableHead className="w-[100px]">Quantity</TableHead>
                     <TableHead className="w-[120px]">Price</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead className="w-[50px]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -278,25 +365,36 @@ export default function QuotePage() {
                       <TableCell>
                         <Input
                           value={item.description}
-                          onChange={(e) => handleLineItemChange(index, 'description', e.target.value)}
+                          onChange={(e) =>
+                            handleLineItemChange(index, 'description', e.target.value)
+                          }
                         />
                       </TableCell>
                       <TableCell>
                         <Input
                           type="number"
                           value={item.quantity}
-                          onChange={(e) => handleLineItemChange(index, 'quantity', e.target.value)}
+                          onChange={(e) =>
+                            handleLineItemChange(index, 'quantity', e.target.value)
+                          }
                         />
                       </TableCell>
                       <TableCell>
                         <Input
                           type="number"
                           value={item.price}
-                          onChange={(e) => handleLineItemChange(index, 'price', e.target.value)}
+                          onChange={(e) =>
+                            handleLineItemChange(index, 'price', e.target.value)
+                          }
                         />
                       </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => removeLineItem(index)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeLineItem(index)}
+                          aria-label="Remove item"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -304,12 +402,18 @@ export default function QuotePage() {
                   ))}
                 </TableBody>
               </Table>
-              <Button variant="outline" size="sm" className="mt-4" onClick={addLineItem}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={addLineItem}
+              >
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Item
               </Button>
             </div>
 
+            {/* ───── Payment Details ───── */}
             <Collapsible asChild>
               <Card>
                 <CollapsibleTrigger className="w-full">
@@ -322,59 +426,102 @@ export default function QuotePage() {
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="paymentDetails.bankName">Bank Name</Label>
-                      <Input id="paymentDetails.bankName" name="paymentDetails.bankName" value={data.paymentDetails?.bankName} onChange={handleInputChange} />
+                      <Input
+                        id="paymentDetails.bankName"
+                        name="paymentDetails.bankName"
+                        value={data.paymentDetails?.bankName}
+                        onChange={handleInputChange}
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="paymentDetails.accountName">Account Name</Label>
-                      <Input id="paymentDetails.accountName" name="paymentDetails.accountName" value={data.paymentDetails?.accountName} onChange={handleInputChange} />
+                      <Label htmlFor="paymentDetails.accountName">
+                        Account Name
+                      </Label>
+                      <Input
+                        id="paymentDetails.accountName"
+                        name="paymentDetails.accountName"
+                        value={data.paymentDetails?.accountName}
+                        onChange={handleInputChange}
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="paymentDetails.accountNumber">Account Number</Label>
-                      <Input id="paymentDetails.accountNumber" name="paymentDetails.accountNumber" value={data.paymentDetails?.accountNumber} onChange={handleInputChange} />
+                      <Label htmlFor="paymentDetails.accountNumber">
+                        Account Number
+                      </Label>
+                      <Input
+                        id="paymentDetails.accountNumber"
+                        name="paymentDetails.accountNumber"
+                        value={data.paymentDetails?.accountNumber}
+                        onChange={handleInputChange}
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="paymentDetails.sortCode">Sort Code / BIC</Label>
-                      <Input id="paymentDetails.sortCode" name="paymentDetails.sortCode" value={data.paymentDetails?.sortCode} onChange={handleInputChange} />
+                      <Label htmlFor="paymentDetails.sortCode">
+                        Sort Code / BIC
+                      </Label>
+                      <Input
+                        id="paymentDetails.sortCode"
+                        name="paymentDetails.sortCode"
+                        value={data.paymentDetails?.sortCode}
+                        onChange={handleInputChange}
+                      />
                     </div>
                   </CardContent>
                 </CollapsibleContent>
               </Card>
             </Collapsible>
-            
+
+            {/* ───── Notes & VAT ───── */}
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
-              <Textarea id="notes" name="notes" placeholder="Any additional notes..." value={data.notes} onChange={handleInputChange} />
+              <Textarea
+                id="notes"
+                name="notes"
+                placeholder="Any additional notes..."
+                value={data.notes}
+                onChange={handleInputChange}
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="vatRate">VAT Rate (%)</Label>
-              <Input id="vatRate" name="vatRate" type="number" placeholder="20" value={data.vatRate} onChange={handleInputChange} />
+              <Input
+                id="vatRate"
+                name="vatRate"
+                type="number"
+                placeholder="20"
+                value={data.vatRate}
+                onChange={handleInputChange}
+              />
             </div>
           </div>
         </div>
       </ScrollArea>
+
+      {/* Right Side – Preview & Actions */}
       <div className="h-full">
-         <div className="sticky top-6 space-y-4">
-             <Card>
-                <CardHeader>
-                    <CardTitle>Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="flex items-center gap-2">
-                    <Button onClick={() => window.print()}>
-                        <Printer className="mr-2"/>
-                        Print / PDF
-                    </Button>
-                    <Button variant="outline" disabled>
-                        <Download className="mr-2" />
-                        Word
-                    </Button>
-                     <Button variant="outline" disabled>
-                        <Download className="mr-2" />
-                        Excel
-                    </Button>
-                </CardContent>
-            </Card>
-            <DocumentPreview data={data} />
+        <div className="sticky top-6 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-wrap items-center gap-2">
+              <Button onClick={() => window.print()}>
+                <Printer className="mr-2" />
+                Print / PDF
+              </Button>
+              <Button variant="outline" disabled>
+                <Download className="mr-2" />
+                Word
+              </Button>
+              <Button variant="outline" disabled>
+                <Download className="mr-2" />
+                Excel
+              </Button>
+            </CardContent>
+          </Card>
+
+          <DocumentPreview data={data} />
         </div>
       </div>
     </div>

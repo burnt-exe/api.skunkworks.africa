@@ -1,0 +1,109 @@
+'use client';
+
+import { ImageResponse } from 'next/og';
+
+// ────────────────────────────────────────────────
+// ✅ Next.js Edge Runtime (fast server-side rendering for metadata routes)
+// ────────────────────────────────────────────────
+export const runtime = 'edge';
+
+// ────────────────────────────────────────────────
+// ✅ Adaptive base sizing for different device pixel ratios (DPR)
+// ────────────────────────────────────────────────
+const DPR =
+  typeof self !== 'undefined' && self.devicePixelRatio
+    ? self.devicePixelRatio
+    : 1;
+const baseSize = Math.round(64 * DPR);
+
+export const size = {
+  width: baseSize,
+  height: baseSize,
+};
+
+export const contentType = 'image/png';
+
+// ────────────────────────────────────────────────
+// ✅ Responsive, theme-adaptive, vector-based icon
+// ────────────────────────────────────────────────
+export default function Icon() {
+  // Server-safe theme detection (defaults to light mode)
+  const prefersDark =
+    typeof self !== 'undefined' &&
+    self.matchMedia &&
+    self.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  const backgroundStart = prefersDark ? '#0E0E1A' : '#FFFFFF';
+  const backgroundEnd = prefersDark ? '#1E1E2E' : '#F5F5FA';
+  const stroke = prefersDark ? '#FFFFFF' : '#1E1E2E';
+  const accent = prefersDark ? '#6366F1' : '#4F46E5';
+  const innerStroke = prefersDark ? '#272738' : '#D4D4E0';
+
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: `linear-gradient(135deg, ${backgroundStart}, ${backgroundEnd})`,
+          color: stroke,
+          borderRadius: '20%',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          overflow: 'hidden',
+        }}
+      >
+        <svg
+          viewBox="0 0 100 100"
+          width="75%"
+          height="75%"
+          preserveAspectRatio="xMidYMid meet"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{
+            objectFit: 'contain',
+            maxWidth: '90%',
+            maxHeight: '90%',
+          }}
+        >
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={accent} />
+              <stop offset="100%" stopColor={backgroundEnd} />
+            </linearGradient>
+          </defs>
+
+          {/* Circular badge background */}
+          <circle cx="50" cy="50" r="46" fill="url(#grad)" />
+
+          {/* Minimalist plus symbol representing “create / generate” */}
+          <path
+            d="M30 50h40M50 30v40"
+            stroke={stroke}
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Subtle inner ring for contrast definition */}
+          <circle
+            cx="50"
+            cy="50"
+            r="44"
+            stroke={innerStroke}
+            strokeWidth="2"
+            fill="none"
+          />
+        </svg>
+      </div>
+    ),
+    {
+      width: baseSize,
+      height: baseSize,
+      headers: {
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
+    }
+  );
+}

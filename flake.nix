@@ -6,14 +6,13 @@
 
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = nixpkgs.legacyPackages.${system};
+      let pkgs = nixpkgs.legacyPackages.${system};
       in {
         devShells.default = pkgs.mkShell {
           buildInputs = [
+            pkgs.nodejs
             pkgs.python311
             pkgs.libxml2Python
-            pkgs.nodejs
             pkgs.git
           ];
         };
