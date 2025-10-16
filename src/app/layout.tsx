@@ -67,13 +67,13 @@ export default function RootLayout({
                 <Sidebar collapsible="icon">
                   <SidebarNav />
                 </Sidebar>
-
-                <SidebarInset>
-                  <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                    {children}
-                  </main>
-                </SidebarInset>
               </ClientOnly>
+
+              <SidebarInset>
+                <main className="flex-1 p-4 sm:p-6 lg:p-8">
+                  {children}
+                </main>
+              </SidebarInset>
             </div>
           </SidebarProvider>
 
