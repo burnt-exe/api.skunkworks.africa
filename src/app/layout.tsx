@@ -13,6 +13,8 @@ import {
 import { SidebarNav } from "@/components/sidebar-nav";
 import { FirebaseClientProvider } from "@/firebase";
 import ClientOnly from "@/components/client-only";
+import { motion } from "framer-motion";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 // ────────────────────────────────────────────────
 // ✅ Optimized font loading
@@ -134,24 +136,28 @@ export default function RootLayout({
         <FirebaseClientProvider>
           {/* Global sidebar layout provider */}
           <SidebarProvider>
-            <div className="flex flex-col sm:flex-row min-h-screen w-full overflow-hidden">
-              {/* Sidebar (rendered client-side only to avoid SSR mismatch) */}
+            <div className="flex min-h-screen w-full overflow-hidden">
               <ClientOnly>
-                <aside className="w-full sm:w-64 md:w-72 lg:w-80 border-r border-border bg-card/90 backdrop-blur-md">
-                  <Sidebar>
-                    <SidebarNav />
-                  </Sidebar>
-                </aside>
+                <Sidebar>
+                  <SidebarNav />
+                </Sidebar>
               </ClientOnly>
-
-              {/* Main Content Area */}
-              <div className="flex-1 flex flex-col w-full bg-background/95 backdrop-blur-sm">
-                <SidebarInset>
-                  <main className="flex flex-col flex-1 w-full h-full p-4 sm:p-6 lg:p-8 overflow-auto">
+              
+              <SidebarInset>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: 'easeInOut' }}
+                  className="flex flex-col flex-1 w-full h-full overflow-auto"
+                >
+                  <header className="flex items-center justify-end p-4 sm:hidden">
+                    <SidebarTrigger />
+                  </header>
+                  <main className="flex-1 p-4 sm:p-6 lg:p-8">
                     {children}
                   </main>
-                </SidebarInset>
-              </div>
+                </motion.div>
+              </SidebarInset>
             </div>
           </SidebarProvider>
 
