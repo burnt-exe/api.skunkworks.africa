@@ -1,24 +1,10 @@
+
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import "./print.css";
+import ClientLayout from "@/components/client-layout";
 
-import React from "react";
-import { Toaster } from "@/components/ui/toaster";
-import {
-  Sidebar,
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
-import { SidebarNav } from "@/components/sidebar-nav";
-import { FirebaseClientProvider } from "@/firebase";
-import ClientOnly from "@/components/client-only";
-import { motion } from "framer-motion";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-
-// ────────────────────────────────────────────────
-// ✅ Optimized font loading
-// ────────────────────────────────────────────────
 const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
@@ -33,9 +19,6 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
-// ────────────────────────────────────────────────
-// ✅ Global SEO / PWA Metadata
-// ────────────────────────────────────────────────
 export const metadata: Metadata = {
   title: {
     default: "EasyFile – Effortless Document Generation",
@@ -92,9 +75,6 @@ export const metadata: Metadata = {
   },
 };
 
-// ────────────────────────────────────────────────
-// ✅ PWA + Mobile Viewport Configuration
-// ────────────────────────────────────────────────
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -106,9 +86,6 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-// ────────────────────────────────────────────────
-// ✅ Root Layout Component
-// ────────────────────────────────────────────────
 export default function RootLayout({
   children,
 }: {
@@ -117,7 +94,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Progressive Web App (PWA) support */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="EasyFile" />
         <meta name="mobile-web-app-capable" content="yes" />
@@ -132,38 +108,7 @@ export default function RootLayout({
           "font-body antialiased bg-background text-foreground min-h-screen transition-colors duration-300",
         ].join(" ")}
       >
-        {/* Firebase context provider */}
-        <FirebaseClientProvider>
-          {/* Global sidebar layout provider */}
-          <SidebarProvider>
-            <div className="flex min-h-screen w-full overflow-hidden">
-              <ClientOnly>
-                <Sidebar>
-                  <SidebarNav />
-                </Sidebar>
-              </ClientOnly>
-              
-              <SidebarInset>
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, ease: 'easeInOut' }}
-                  className="flex flex-col flex-1 w-full h-full overflow-auto"
-                >
-                  <header className="flex items-center justify-end p-4 sm:hidden">
-                    <SidebarTrigger />
-                  </header>
-                  <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                    {children}
-                  </main>
-                </motion.div>
-              </SidebarInset>
-            </div>
-          </SidebarProvider>
-
-          {/* Global toaster notifications */}
-          <Toaster />
-        </FirebaseClientProvider>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );
