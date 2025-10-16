@@ -64,7 +64,7 @@ export default function RootLayout({
             <div className="flex min-h-screen">
               {/* Sidebar rendered client-side only to avoid SSR mismatch */}
               <ClientOnly>
-                <Sidebar collapsible="icon">
+                <Sidebar>
                   <SidebarNav />
                 </Sidebar>
               </ClientOnly>
