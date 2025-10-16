@@ -1,8 +1,6 @@
-runConfig:
-  maxInstances: 1
+
 runtime: nodejs
 env:
-  - key: FIREBASE_CONFIG
-    value: '{"projectId":"easyfilev20-27833257-6347a","storageBucket":"easyfilev20-27833257-6347a.appspot.com"}'
+  - secret: FIREBASE_CONFIG
   - key: GOOGLE_APPLICATION_CREDENTIALS
     value: "/workspace/serviceAccountKey.json"
