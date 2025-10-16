@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -24,6 +24,7 @@ import {
   FileCog,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import logoSrc from '/home/user/studio/src/types/icon.png';
 
 /**
  * Sidebar navigation for EasyFile Suite.
@@ -31,7 +32,6 @@ import { cn } from '@/lib/utils';
  */
 export function SidebarNav() {
   const pathname = usePathname();
-  const [logoSrc, setLogoSrc] = useState('/icon.svg');
 
   const navItems = useMemo(
     () => [
@@ -69,7 +69,6 @@ export function SidebarNav() {
               height={36}
               priority
               className="object-contain drop-shadow-[0_0_6px_rgba(56,152,255,0.6)] group-hover:scale-110 transition-transform duration-300 ease-in-out"
-              onError={() => setLogoSrc('/icon.svg')}
             />
           </div>
           <h1 className="text-lg font-semibold tracking-tight bg-gradient-to-r from-[#1D8EFF] to-[#00B4FF] bg-clip-text text-transparent group-data-[collapsible=icon]:hidden">
