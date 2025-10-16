@@ -2,7 +2,11 @@
   "firebase_hosting": {
     "deploymentHostingUrl": "https://easydocs-jyi3p.web.app"
   },
-  "cloud_run_deploy": {},
+  "cloud_run_deploy": {
+    "region": "africa-south1",
+    "sourceFlag": "--source .",
+    "allowUnauthenticatedInvocationsFlag": "--allow-unauthenticated"
+  },
   "gemini_api": {},
   "google_maps_platform": {},
   "secrets_manager": {}
