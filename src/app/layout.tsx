@@ -1,103 +1,107 @@
-import type { Metadata, Viewport } from 'next';
-import { Inter, Space_Grotesk } from 'next/font/google';
-import './globals.css';
-import './print.css';
+import type { Metadata, Viewport } from "next";
+import { Inter, Space_Grotesk } from "next/font/google";
+import "./globals.css";
+import "./print.css";
 
-import { Toaster } from '@/components/ui/toaster';
-import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { SidebarNav } from '@/components/sidebar-nav';
-import { FirebaseClientProvider } from '@/firebase';
-import ClientOnly from '@/components/client-only';
-import React from 'react';
+import React from "react";
+import { Toaster } from "@/components/ui/toaster";
+import {
+  Sidebar,
+  SidebarInset,
+  SidebarProvider,
+} from "@/components/ui/sidebar";
+import { SidebarNav } from "@/components/sidebar-nav";
+import { FirebaseClientProvider } from "@/firebase";
+import ClientOnly from "@/components/client-only";
 
 // ────────────────────────────────────────────────
 // ✅ Optimized font loading
 // ────────────────────────────────────────────────
 const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  variable: '--font-inter',
-  display: 'swap',
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  variable: '--font-space-grotesk',
-  display: 'swap',
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-space-grotesk",
+  display: "swap",
 });
 
 // ────────────────────────────────────────────────
-// ✅ Metadata for SEO, PWA & Social Sharing
+// ✅ Global SEO / PWA Metadata
 // ────────────────────────────────────────────────
 export const metadata: Metadata = {
   title: {
-    default: 'EasyFile – Effortless Document Generation',
-    template: '%s | EasyFile',
+    default: "EasyFile – Effortless Document Generation",
+    template: "%s | EasyFile",
   },
   description:
-    'Create professional invoices, purchase orders, receipts, and more with simplicity and precision using EasyFile.',
-  applicationName: 'EasyFile',
-  authors: [{ name: 'Skunkworks Africa', url: 'https://skunkworks.africa' }],
-  metadataBase: new URL('https://easyfile.skunkworks.africa'),
-  manifest: '/manifest.json',
+    "Create professional invoices, purchase orders, receipts, and more with simplicity and precision using EasyFile.",
+  applicationName: "EasyFile",
+  authors: [{ name: "Skunkworks Africa", url: "https://skunkworks.africa" }],
+  metadataBase: new URL("https://easyfile.skunkworks.africa"),
+  manifest: "/manifest.json",
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/icon.png',
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/icon.png",
   },
   openGraph: {
-    title: 'EasyFile – Effortless Document Generation',
+    title: "EasyFile – Effortless Document Generation",
     description:
-      'Generate invoices, receipts, and business documents quickly and beautifully with EasyFile.',
-    url: 'https://easyfile.skunkworks.africa',
-    siteName: 'EasyFile',
-    type: 'website',
-    locale: 'en_US',
+      "Generate invoices, receipts, and business documents quickly and beautifully with EasyFile.",
+    url: "https://easyfile.skunkworks.africa",
+    siteName: "EasyFile",
+    type: "website",
+    locale: "en_US",
     images: [
       {
-        url: '/icon.png',
+        url: "/icon.png",
         width: 512,
         height: 512,
-        alt: 'EasyFile Logo',
+        alt: "EasyFile Logo",
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'EasyFile – Document Automation Made Simple',
-    description: 'Create, manage, and export business documents with ease.',
-    creator: '@SkunkworksZA',
-    images: ['/icon.png'],
+    card: "summary_large_image",
+    title: "EasyFile – Document Automation Made Simple",
+    description: "Create, manage, and export business documents with ease.",
+    creator: "@SkunkworksZA",
+    images: ["/icon.png"],
   },
   keywords: [
-    'EasyFile',
-    'document automation',
-    'invoice generator',
-    'purchase order',
-    'receipt maker',
-    'Skunkworks Africa',
-    'PDF export',
-    'PWA document app',
+    "EasyFile",
+    "document automation",
+    "invoice generator",
+    "purchase order",
+    "receipt maker",
+    "Skunkworks Africa",
+    "PDF export",
+    "PWA document app",
   ],
-  category: 'business',
+  category: "business",
   alternates: {
-    canonical: 'https://easyfile.skunkworks.africa',
+    canonical: "https://easyfile.skunkworks.africa",
   },
 };
 
 // ────────────────────────────────────────────────
-// ✅ Viewport configuration for PWA + mobile
+// ✅ PWA + Mobile Viewport Configuration
 // ────────────────────────────────────────────────
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#0E0E1A' },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0E0E1A" },
   ],
-  viewportFit: 'cover',
+  viewportFit: "cover",
 };
 
 // ────────────────────────────────────────────────
@@ -111,41 +115,37 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* PWA iOS-specific meta */}
+        {/* Progressive Web App (PWA) support */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="EasyFile" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="EasyFile" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
 
       <body
-        className={`
-          ${inter.variable}
-          ${spaceGrotesk.variable}
-          font-body
-          antialiased
-          bg-background
-          text-foreground
-          min-h-screen
-          transition-colors
-          duration-300
-        `}
+        className={[
+          inter.variable,
+          spaceGrotesk.variable,
+          "font-body antialiased bg-background text-foreground min-h-screen transition-colors duration-300",
+        ].join(" ")}
       >
-        {/* Firebase Context Provider */}
+        {/* Firebase context provider */}
         <FirebaseClientProvider>
-          {/* Sidebar Layout Context */}
+          {/* Global sidebar layout provider */}
           <SidebarProvider>
             <div className="flex flex-col sm:flex-row min-h-screen w-full overflow-hidden">
-              {/* Sidebar (only rendered client-side to prevent SSR mismatch) */}
+              {/* Sidebar (rendered client-side only to avoid SSR mismatch) */}
               <ClientOnly>
-                <div className="w-full sm:w-64 md:w-72 lg:w-80 border-r border-border bg-card/90 backdrop-blur-md">
+                <aside className="w-full sm:w-64 md:w-72 lg:w-80 border-r border-border bg-card/90 backdrop-blur-md">
                   <Sidebar>
                     <SidebarNav />
                   </Sidebar>
-                </div>
+                </aside>
               </ClientOnly>
 
-              {/* Main content area */}
-              <div className="flex-1 w-full bg-background/95 backdrop-blur-sm flex flex-col">
+              {/* Main Content Area */}
+              <div className="flex-1 flex flex-col w-full bg-background/95 backdrop-blur-sm">
                 <SidebarInset>
                   <main className="flex flex-col flex-1 w-full h-full p-4 sm:p-6 lg:p-8 overflow-auto">
                     {children}
@@ -155,7 +155,7 @@ export default function RootLayout({
             </div>
           </SidebarProvider>
 
-          {/* Toast notifications (always client-side) */}
+          {/* Global toaster notifications */}
           <Toaster />
         </FirebaseClientProvider>
       </body>
