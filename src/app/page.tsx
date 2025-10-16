@@ -12,7 +12,7 @@ export default function LandingPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground px-4 sm:px-6 lg:px-8">
       <header className="fixed top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-transparent">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.png" alt="EasyFile Logo" width={32} height={32} />
+          <Image src="/logo.png" alt="EasyFile Logo" width={32} height={32} style={{ height: 'auto' }} />
           <h1 className="text-xl font-semibold">EasyFile</h1>
         </Link>
         <SidebarTrigger />
@@ -29,6 +29,7 @@ export default function LandingPage() {
                 height={96}
                 priority
                 className="transition-transform duration-300 group-hover:scale-110"
+                style={{ height: 'auto' }}
               />
             </div>
           </Link>
