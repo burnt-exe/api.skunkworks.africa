@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useTransition, useMemo } from 'react';
@@ -186,7 +187,7 @@ export default function EasyDocuConvertPage() {
       if(!selectableToFormats.includes(toFormat as any)){
         setToFormat(selectableToFormats[0] as SupportedFormat)
       }
-  }, [fromFormat, selectableToFormats, toFormat])
+  }, [fromFormat, selectableToFormats, toFormat]);
 
   return (
     <div className="space-y-6">
