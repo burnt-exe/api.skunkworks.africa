@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { History, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { useCalculator } from '@/context/CalculatorProvider';
 
 export function Calculator() {
@@ -266,8 +266,13 @@ export function CalculatorDialog() {
   return (
     <Dialog open={isCalculatorOpen} onOpenChange={setCalculatorOpen}>
       <DialogContent className="max-w-4xl w-full p-0 border-0 bg-transparent shadow-none">
+        <DialogHeader>
+          <DialogTitle className="sr-only">Calculator</DialogTitle>
+        </DialogHeader>
         <Calculator />
       </DialogContent>
     </Dialog>
   );
 }
+
+    
