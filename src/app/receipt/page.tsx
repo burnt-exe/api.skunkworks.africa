@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useTransition } from 'react';
 import type { DocumentData, LineItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,8 +12,10 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import DocumentPreview from '@/components/document-preview';
-import { PlusCircle, Trash2, Printer, Download, Upload } from 'lucide-react';
+import { PlusCircle, Trash2, Printer, Download, Upload, LoaderCircle } from 'lucide-react';
 import React from 'react';
+import { convertToXlsxAction, convertPdfToDocxAction } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
 
 const initialData: DocumentData = {
   title: 'RECEIPT',
@@ -38,6 +40,8 @@ export const dynamic = 'force-dynamic';
 
 export default function ReceiptPage() {
   const [data, setData] = useState<DocumentData>(initialData);
+  const [isExporting, startExportTransition] = useTransition();
+  const { toast } = useToast();
 
   useEffect(() => {
     setData((prev) => ({
@@ -95,6 +99,48 @@ export default function ReceiptPage() {
   const removeLineItem = (index: number) => {
     const newLineItems = data.lineItems.filter((_, i) => i !== index);
     setData((prev) => ({ ...prev, lineItems: newLineItems }));
+  };
+
+  const handleWordExport = () => {
+    startExportTransition(async () => {
+      const dummyPdfDataUri = "data:application/pdf;base64,JVBERi0xLjcK...";
+      const result = await convertPdfToDocxAction({ pdfDataUri: dummyPdfDataUri });
+
+      if (result.success && result.data?.docxDataUri) {
+        const link = document.createElement('a');
+        link.href = result.data.docxDataUri;
+        link.download = `${data.details.value || 'receipt'}.docx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        toast({
+          title: 'Word Export Failed',
+          description: result.error || 'Unable to generate Word document.',
+          variant: 'destructive',
+        });
+      }
+    });
+  };
+
+  const handleExcelExport = () => {
+    startExportTransition(async () => {
+      const result = await convertToXlsxAction(data);
+      if (result.success && result.data?.xlsxDataUri) {
+        const link = document.createElement('a');
+        link.href = result.data.xlsxDataUri;
+        link.download = `${data.details.value || 'receipt'}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        toast({
+          title: 'Excel Export Failed',
+          description: result.error || 'Unable to generate Excel file.',
+          variant: 'destructive',
+        });
+      }
+    });
   };
 
   return (
@@ -213,13 +259,11 @@ export default function ReceiptPage() {
                         <Printer className="mr-2"/>
                         Print / PDF
                     </Button>
-                    <Button variant="outline" disabled>
-                        <Download className="mr-2" />
-                        Word
+                    <Button variant="outline" onClick={handleWordExport} disabled={isExporting}>
+                        {isExporting ? <LoaderCircle className="animate-spin mr-2" /> : <Download className="mr-2" />} Word
                     </Button>
-                     <Button variant="outline" disabled>
-                        <Download className="mr-2" />
-                        Excel
+                     <Button variant="outline" onClick={handleExcelExport} disabled={isExporting}>
+                        {isExporting ? <LoaderCircle className="animate-spin mr-2" /> : <Download className="mr-2" />} Excel
                     </Button>
                 </CardContent>
             </Card>
