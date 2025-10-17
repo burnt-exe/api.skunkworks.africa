@@ -139,24 +139,37 @@ function MobileSidebar({ children }: { children: React.ReactNode }) {
 function DesktopSidebar({ children }: { children: React.ReactNode }) {
   const { sidebarState } = useSidebar();
   
-  const sidebarWidth = {
-      full: 256,
-      compact: 64,
-      hidden: 0
-  }
+  const sidebarVariants = {
+    full: {
+      width: 'auto',
+      maxWidth: '256px',
+      minWidth: '200px', // Ensure it doesn't get too small
+      transition: { ease: 'easeInOut', duration: 0.3 },
+    },
+    compact: {
+      width: '64px',
+      transition: { ease: 'easeInOut', duration: 0.3 },
+    },
+    hidden: {
+      width: '0px',
+      minWidth: '0px',
+      transition: { ease: 'easeInOut', duration: 0.3 },
+    },
+  };
 
   return (
     <motion.aside
       className={cn('h-screen overflow-y-auto overflow-x-hidden group z-30')}
       initial={false}
-      animate={{ width: sidebarWidth[sidebarState] }}
-      transition={{ ease: 'easeInOut', duration: 0.3 }}
+      animate={sidebarState}
+      variants={sidebarVariants}
       data-collapsible={sidebarState}
     >
       {children}
     </motion.aside>
   );
 }
+
 
 /* -------------------------------------------------------------------------- */
 /*                               Sidebar Trigger                              */
@@ -198,7 +211,10 @@ export const SidebarHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'flex h-16 shrink-0 items-center justify-between',
+      'flex h-16 shrink-0 items-center',
+      'transition-all duration-300 ease-in-out',
+      'group-data-[collapsible=compact]:justify-center group-data-[collapsible=compact]:px-2',
+      'group-data-[collapsible=full]:justify-start group-data-[collapsible=full]:px-4',
       className
     )}
     {...props}
@@ -212,24 +228,27 @@ export const SidebarMenu = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <nav
     ref={ref}
-    className={cn('flex-1 space-y-1 overflow-y-auto px-2 py-4', className)}
+    className={cn(
+        'flex flex-col flex-1 space-y-1 overflow-y-auto px-2 py-4',
+        'transition-all duration-300 ease-in-out',
+        'group-data-[collapsible=compact]:px-2',
+        'group-data-[collapsible=full]:px-4',
+        className
+    )}
     {...props}
   />
 ));
 SidebarMenu.displayName = 'SidebarMenu';
 
 export function SidebarMenuItem({ children }: { children: React.ReactNode }) {
-  const { isIconMode } = useSidebar();
-  if (isIconMode) {
-    return <>{children}</>;
-  }
   return <>{children}</>;
 }
+
 
 export const SidebarMenuButton = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button> & { isActive?: boolean; tooltip?: string }
->(({ asChild, isActive, tooltip, ...props }, ref) => {
+>(({ asChild, isActive, tooltip, children, ...props }, ref) => {
   const { isIconMode } = useSidebar();
 
   const buttonContent = (
@@ -237,13 +256,16 @@ export const SidebarMenuButton = React.forwardRef<
       ref={ref}
       variant="ghost"
       className={cn(
-        'w-full justify-start',
+        'w-full justify-start h-auto p-3',
         isIconMode && 'justify-center',
-        isActive && 'bg-accent'
+        isActive && 'bg-accent text-accent-foreground',
+        props.className
       )}
       {...props}
       asChild={asChild}
-    />
+    >
+        {children}
+    </Button>
   );
 
   if (isIconMode) {

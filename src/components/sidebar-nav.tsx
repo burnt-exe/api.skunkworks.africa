@@ -34,8 +34,7 @@ import { Logo } from './logo';
 export function SidebarNav() {
   const pathname = usePathname();
   const { toggleCalculator } = useCalculator();
-  const { isIconMode, sidebarState } = useSidebar();
-  const isOpen = sidebarState === 'full';
+  const { isIconMode } = useSidebar();
 
   const navItems = useMemo(
     () => [
@@ -55,13 +54,13 @@ export function SidebarNav() {
 
   return (
     <div
-      className="flex flex-col h-full bg-[#0E0E1A] text-white/90 border-r border-white/10"
+      className="flex flex-col h-full bg-background text-foreground/90 border-r border-border/10"
       role="navigation"
       aria-label="Primary Sidebar"
     >
       {/* Header */}
-      <SidebarHeader className="p-3 justify-start">
-        <Logo isCollapsed={!isOpen} />
+      <SidebarHeader>
+        <Logo isCollapsed={isIconMode} />
       </SidebarHeader>
 
       {/* Navigation Items */}
@@ -75,10 +74,10 @@ export function SidebarNav() {
                 isActive={isActive}
                 tooltip={label}
                 className={cn(
-                  'flex items-center w-full justify-start gap-3 px-3 py-2 rounded-md transition-all duration-200 select-none',
-                  'hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D8EFF]',
+                  'transition-all duration-200 select-none',
+                  'hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   isActive &&
-                    'bg-gradient-to-r from-[#1D8EFF]/20 to-[#00B4FF]/20 text-white font-medium shadow-inner'
+                    'bg-primary/10 text-primary font-medium'
                 )}
               >
                 <Link
@@ -90,10 +89,10 @@ export function SidebarNav() {
                     aria-hidden="true"
                     className={cn(
                       'w-5 h-5 shrink-0 transition-transform duration-200',
-                      isActive && 'scale-110 text-[#1D8EFF]'
+                      isActive && 'scale-110 text-primary'
                     )}
                   />
-                  <span className={cn(isIconMode && "sr-only")}>
+                  <span className={cn('whitespace-nowrap transition-opacity duration-200', isIconMode ? 'opacity-0 w-0' : 'opacity-100 w-auto')}>
                     {label}
                   </span>
                 </Link>
@@ -106,28 +105,33 @@ export function SidebarNav() {
               onClick={toggleCalculator}
               tooltip="Calculator"
               className={cn(
-                'flex items-center w-full justify-start gap-3 px-3 py-2 rounded-md transition-all duration-200 select-none',
-                'hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D8EFF]'
+                'transition-all duration-200 select-none',
+                'hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
               )}
             >
-              <Calculator
-                aria-hidden="true"
-                className='w-5 h-5 shrink-0 transition-transform duration-200'
-              />
-              <span className={cn(isIconMode && "sr-only")}>
-                Calculator
-              </span>
+              <div className="flex items-center gap-3">
+                <Calculator
+                  aria-hidden="true"
+                  className='w-5 h-5 shrink-0 transition-transform duration-200'
+                />
+                <span className={cn('whitespace-nowrap transition-opacity duration-200', isIconMode ? 'opacity-0 w-0' : 'opacity-100 w-auto')}>
+                  Calculator
+                </span>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
       </SidebarMenu>
 
       {/* Footer */}
       <footer
-        className={cn("p-4 text-xs text-white/40 border-t border-white/10 mt-auto", isIconMode && "p-2 text-center")}
+        className={cn(
+          "px-4 py-3 text-xs text-muted-foreground border-t border-border/10 mt-auto transition-all duration-300",
+          isIconMode && "px-2 text-center"
+        )}
         aria-label="Application version"
       >
         <span className={cn(isIconMode && "hidden")}>EasyFile Suite — </span>
-        <span className="text-white/60">v1.0</span>
+        <span className="text-foreground/60">v1.0</span>
       </footer>
     </div>
   );
