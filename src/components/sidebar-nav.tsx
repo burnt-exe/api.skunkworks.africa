@@ -40,14 +40,14 @@ export function SidebarNav() {
   const navItems = useMemo(
     () => [
       { href: '/', label: 'Home', icon: Home },
-      { href: '/invoice', label: 'Invoice', icon: FileText },
+      { href: '/invoice', label: 'EasyInvoice', icon: FileText },
       { href: '/easy-quote', label: 'EasyQuote', icon: FileSignature },
-      { href: '/purchase-order', label: 'Purchase Order', icon: ShoppingCart },
-      { href: '/sales-order', label: 'Sales Order', icon: Send },
-      { href: '/receipt', label: 'Receipt', icon: Receipt },
-      { href: '/payslip', label: 'Payslip', icon: Users },
-      { href: '/easy-stock-inventory', label: 'EasyStock Inventory', icon: Package },
-      { href: '/easy-docu-convert', label: 'EasyDocuConvert', icon: FileCog },
+      { href: '/purchase-order', label: 'EasyPO', icon: ShoppingCart },
+      { href: '/sales-order', label: 'EasySO', icon: Send },
+      { href: '/receipt', label: 'EasyReceipt', icon: Receipt },
+      { href: '/payslip', label: 'EasyPayslip', icon: Users },
+      { href: '/easy-stock-inventory', label: 'EasyStock', icon: Package },
+      { href: '/easy-docu-convert', label: 'EasyConvert', icon: FileCog },
       { href: '/easy-contract', label: 'EasyContract', icon: FileSignature },
     ],
     []
@@ -60,7 +60,7 @@ export function SidebarNav() {
       aria-label="Primary Sidebar"
     >
       {/* Header */}
-      <SidebarHeader>
+      <SidebarHeader className="p-3 justify-start">
         <Logo isCollapsed={!isOpen} />
       </SidebarHeader>
 
@@ -123,7 +123,7 @@ export function SidebarNav() {
 
       {/* Footer */}
       <footer
-        className={cn("p-4 text-xs text-white/40 border-t border-white/10", isIconMode && "p-2 text-center")}
+        className={cn("p-4 text-xs text-white/40 border-t border-white/10 mt-auto", isIconMode && "p-2 text-center")}
         aria-label="Application version"
       >
         <span className={cn(isIconMode && "hidden")}>EasyFile Suite — </span>
