@@ -11,6 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { Document, Packer, Paragraph, HeadingLevel, TextRun } from "docx";
+import { googleAI } from '@genkit-ai/googleai';
 
 const ConvertPdfToDocxInputSchema = z.object({
   pdfDataUri: z.string().describe("The PDF file content as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:application/pdf;base64,<encoded_data>'."),
@@ -53,7 +54,8 @@ The output must be a JSON object with a single key "blocks", which is an array o
 PDF: {{media url=pdfDataUri}}`,
     config: {
         temperature: 0.1,
-    }
+    },
+    models: [googleAI.model('gemini-1.5-pro-latest')],
 });
 
 

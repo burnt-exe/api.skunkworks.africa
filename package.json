@@ -45,7 +45,6 @@
     "mammoth": "^1.7.2",
     "next": "15.5.5",
     "papaparse": "^5.4.1",
-    "pdf-parse": "^1.1.1",
     "react": "^18",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18",
@@ -60,8 +59,6 @@
   "devDependencies": {
     "@types/node": "^20",
     "@types/papaparse": "^5.3.14",
-    "@types/pdf-parse": "^1.1.5",
-    "@types/pdfjs-dist": "^2.10.377",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.19",

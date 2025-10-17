@@ -20,8 +20,6 @@ import {
   CheckCircle,
   FileUp,
   ArrowRight,
-  File,
-  FileQuestion,
   FileText,
   Sheet,
   FileImage,
@@ -37,7 +35,7 @@ import { cn } from '@/lib/utils';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type SupportedFormat = 'pdf' | 'docx' | 'xlsx' | 'jpeg';
+type SupportedFormat = 'pdf' | 'docx' | 'xlsx' | 'jpeg' | 'png';
 
 const formatDetails: Record<
   SupportedFormat,
@@ -46,10 +44,12 @@ const formatDetails: Record<
   pdf: { label: 'PDF Document', mime: 'application/pdf', icon: FileText },
   docx: { label: 'Microsoft Word', mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', icon: FileText },
   xlsx: { label: 'Microsoft Excel', mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', icon: Sheet },
-  jpeg: { label: 'Image', mime: 'image/jpeg', icon: FileImage },
+  jpeg: { label: 'JPEG Image', mime: 'image/jpeg', icon: FileImage },
+  png: { label: 'PNG Image', mime: 'image/png', icon: FileImage },
 };
 
 const formatOptions = Object.keys(formatDetails) as SupportedFormat[];
+const imageFormats: SupportedFormat[] = ['jpeg', 'png'];
 
 export default function EasyDocuConvertPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -67,11 +67,16 @@ export default function EasyDocuConvertPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.type !== formatDetails[fromFormat].mime) {
-        toast({
+      // For images, we need to be flexible on mime type
+      const acceptedMimes = imageFormats.includes(fromFormat)
+        ? imageFormats.map(f => formatDetails[f].mime)
+        : [formatDetails[fromFormat].mime];
+
+      if (!acceptedMimes.includes(selectedFile.type)) {
+         toast({
           variant: 'destructive',
           title: 'Invalid File Type',
-          description: `Please upload a ${fromFormat.toUpperCase()} file.`,
+          description: `Please upload a ${fromFormat.toUpperCase()} file. You uploaded a ${selectedFile.type}`,
         });
         setFile(null);
         return;
@@ -98,55 +103,54 @@ export default function EasyDocuConvertPage() {
         reader.onload = async () => {
           const base64File = reader.result as string;
           let result;
+          let outputUrl: string | undefined;
 
-          // From PDF conversions
+          // FROM PDF conversions
           if (fromFormat === 'pdf') {
             switch (toFormat) {
               case 'docx':
                 result = await convertPdfToDocxAction({ pdfDataUri: base64File });
+                outputUrl = result.data?.docxDataUri;
                 break;
               case 'xlsx':
                 result = await convertPdfToXlsxAction({ pdfDataUri: base64File });
+                outputUrl = result.data?.xlsxDataUri;
                 break;
               case 'jpeg':
+              case 'png':
                 result = await convertPdfToImageAction({ pdfDataUri: base64File });
+                outputUrl = result.data?.imageDataUri;
                 break;
               default:
                 throw new Error('Unsupported conversion from PDF.');
             }
           } 
-          // To PDF conversions
+          // TO PDF conversions
           else if (toFormat === 'pdf') {
-              const sourceTypeMap = {'docx': 'docx', 'xlsx': 'xlsx', 'jpeg': 'jpeg', 'png': 'png'};
-              const detectedType = fromFormat === 'docx' ? 'docx' : fromFormat === 'xlsx' ? 'xlsx' : 'jpeg';
-
+              const sourceType = fromFormat as 'docx' | 'xlsx' | 'jpeg' | 'png';
               result = await convertToPdfAction({
                 fileDataUri: base64File,
-                sourceType: detectedType as 'docx' | 'xlsx' | 'jpeg',
+                sourceType: sourceType,
               });
+              outputUrl = result.data?.pdfDataUri;
           }
           else {
             throw new Error(`Conversion from ${fromFormat.toUpperCase()} to ${toFormat.toUpperCase()} is not supported.`);
           }
 
-          if (result.success && result.data) {
-            const url = (result.data as any).pdfDataUri || (result.data as any).docxDataUri || (result.data as any).xlsxDataUri || (result.data as any).imageDataUri;
+          if (result.success && outputUrl) {
+            const originalFileName = file.name.split('.').slice(0, -1).join('.') || 'document';
+            const newExtension = toFormat === 'jpeg' ? 'jpg' : toFormat;
+            const newFileName = `${originalFileName}.${newExtension}`;
 
-            if (url) {
-              const originalFileName = file.name.split('.').slice(0, -1).join('.') || 'document';
-              const newFileName = `${originalFileName}.${toFormat}`;
-
-              setConvertedFile({ url, fileName: newFileName });
-              toast({
-                title: 'Conversion Successful',
-                description: `Your file has been converted to ${toFormat.toUpperCase()}.`,
-                variant: 'default',
-              });
-            } else {
-              throw new Error('Conversion resulted in no data.');
-            }
+            setConvertedFile({ url: outputUrl, fileName: newFileName });
+            toast({
+              title: 'Conversion Successful',
+              description: `Your file has been converted to ${toFormat.toUpperCase()}.`,
+              variant: 'default',
+            });
           } else {
-            throw new Error(result.error || 'An unknown error occurred.');
+            throw new Error(result.error || 'An unknown error occurred during conversion.');
           }
         };
         reader.onerror = () => {
@@ -176,18 +180,31 @@ export default function EasyDocuConvertPage() {
   };
   
   const selectableToFormats = useMemo(() => {
-      if(fromFormat === 'pdf') {
-          return formatOptions.filter(f => f !== 'pdf');
-      }
-      return ['pdf'];
+    if (fromFormat === 'pdf') {
+      return formatOptions.filter(f => f !== 'pdf' && !imageFormats.includes(f) || f === 'jpeg'); // Allow PDF -> DOCX, XLSX, JPEG
+    }
+    if (imageFormats.includes(fromFormat)) {
+      return ['pdf']; // Allow Image -> PDF
+    }
+    if (fromFormat === 'docx' || fromFormat === 'xlsx') {
+      return ['pdf']; // Allow DOCX/XLSX -> PDF
+    }
+    return [];
   }, [fromFormat]);
 
-  // Auto-select a valid "To" format when "From" format changes
   React.useEffect(() => {
       if(!selectableToFormats.includes(toFormat as any)){
         setToFormat(selectableToFormats[0] as SupportedFormat)
       }
   }, [fromFormat, selectableToFormats, toFormat]);
+
+  const acceptedMimeTypes = useMemo(() => {
+    if (imageFormats.includes(fromFormat)) {
+      return imageFormats.map(f => formatDetails[f].mime).join(',');
+    }
+    return formatDetails[fromFormat].mime;
+  }, [fromFormat]);
+
 
   return (
     <div className="space-y-6">
@@ -267,7 +284,7 @@ export default function EasyDocuConvertPage() {
               <Input
                 id="doc-upload"
                 type="file"
-                accept={formatDetails[fromFormat].mime}
+                accept={acceptedMimeTypes}
                 onChange={handleFileChange}
                 className="hidden"
               />

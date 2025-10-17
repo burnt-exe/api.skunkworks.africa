@@ -1,3 +1,4 @@
+
 'use server';
 
 import { randomUUID } from 'crypto';
@@ -89,7 +90,7 @@ const GenerateLandingPageImageSchema = z.object({
 });
 
 const PdfInputSchema = z.object({
-  pdfDataUri: z.string().url('Valid data URI required'),
+  pdfDataUri: z.string().min(1, 'PDF Data URI is required'),
 });
 
 const DocumentInputSchema = z.object({
