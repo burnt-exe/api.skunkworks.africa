@@ -24,7 +24,6 @@ import {
   FileCog,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import logoSrc from '/home/user/studio/src/types/icon.png';
 import { useCalculator } from '@/context/CalculatorProvider';
 
 /**
@@ -64,7 +63,7 @@ export function SidebarNav() {
         >
           <div className="relative w-9 h-9">
             <Image
-              src={logoSrc}
+              src="/logo.png"
               alt="EasyFile Logo"
               width={36}
               height={36}
