@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { UploadCloud, File, X, CheckCircle, LoaderCircle } from 'lucide-react';
+import { UploadCloud, File, X, CheckCircle, LoaderCircle, Sparkles } from 'lucide-react';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection } from 'firebase/firestore';
 
@@ -36,7 +36,7 @@ export default function StorageUploader() {
         toast({
           variant: 'destructive',
           title: 'Invalid File Type',
-          description: 'Please select a PDF file.',
+          description: 'Only PDF documents are accepted for this journey.',
         });
         return;
       }
@@ -51,7 +51,7 @@ export default function StorageUploader() {
       toast({
         variant: 'destructive',
         title: 'Upload Error',
-        description: 'Please select a file and ensure you are logged in.',
+        description: 'Please select a document and ensure you are logged in to begin.',
       });
       return;
     }
@@ -74,8 +74,8 @@ export default function StorageUploader() {
     }
 
     toast({
-        title: 'Starting Upload...',
-        description: `Your file "${file.name}" is being uploaded.`,
+        title: 'Initiating Canvas...',
+        description: `Your document "${file.name}" is being prepared.`,
     });
 
     const storagePath = `uploads/${user.uid}/${uploadDocRef.id}/${file.name}`;
@@ -95,8 +95,8 @@ export default function StorageUploader() {
         setUploadTask(null);
         toast({
           variant: 'destructive',
-          title: 'Upload Failed',
-          description: `An error occurred: ${error.message}`,
+          title: 'A Moment of Turbulence',
+          description: `The upload was interrupted: ${error.message}`,
         });
       },
       () => {
@@ -105,8 +105,8 @@ export default function StorageUploader() {
         setUploadTask(null);
         getDownloadURL(task.snapshot.ref).then((downloadURL) => {
           toast({
-            title: 'Upload Complete',
-            description: `"${file.name}" is now being processed.`,
+            title: 'Canvas Ready',
+            description: `"${file.name}" has arrived. The vision is taking shape.`,
           });
         });
       }
@@ -119,7 +119,7 @@ export default function StorageUploader() {
       setIsUploading(false);
       setUploadTask(null);
       setProgress(0);
-      toast({ title: 'Upload Cancelled' });
+      toast({ title: 'Process Paused' });
     }
   };
 
@@ -136,9 +136,9 @@ export default function StorageUploader() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Upload Document for Processing</CardTitle>
+        <CardTitle>Unlock Your Document's Visuals</CardTitle>
         <CardDescription>
-          Upload a PDF to automatically extract images and data. Max file size: 50MB.
+          From static pages to a dynamic canvas. Liberate every image, graphic, and idea locked within your PDFs.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -152,7 +152,7 @@ export default function StorageUploader() {
           >
             <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
             <p className="mt-2 text-sm text-muted-foreground">
-              {file ? file.name : 'Click or drag a PDF file here'}
+              {file ? file.name : 'Place your document here to begin the transformation.'}
             </p>
             <Input
               id="file-upload"
@@ -180,7 +180,7 @@ export default function StorageUploader() {
             </div>
             <Progress value={progress} />
              <p className="text-xs text-muted-foreground text-center">
-                {isUploading ? `${Math.round(progress)}%` : isComplete ? 'Complete' : 'Pending'}
+                {isUploading ? `Analyzing... ${Math.round(progress)}%` : isComplete ? 'Extraction Complete' : 'Awaiting Command'}
             </p>
           </div>
         )}
@@ -192,9 +192,9 @@ export default function StorageUploader() {
             ) : isComplete ? (
               <CheckCircle className="mr-2 h-4 w-4" />
             ) : (
-              <UploadCloud className="mr-2 h-4 w-4" />
+              <Sparkles className="mr-2 h-4 w-4" />
             )}
-            {isUploading ? 'Uploading...' : isComplete ? 'Uploaded' : 'Upload & Process'}
+            {isUploading ? 'Revealing...' : isComplete ? 'Revealed' : 'Begin Extraction'}
           </Button>
           {isUploading && (
             <Button variant="destructive" onClick={handleCancel}>
