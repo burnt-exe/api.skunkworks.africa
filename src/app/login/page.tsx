@@ -79,8 +79,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
-            <div className="mx-auto mb-4">
-                <Image src={logoUrl} alt="EasyFile Logo" width={80} height={80} />
+            <div className="mx-auto mb-4" style={{ backgroundColor: 'white', borderRadius: '50%', padding: '1rem' }}>
+                <Image src={logoUrl} alt="EasyFile Logo" width={80} height={80} className="text-black" />
             </div>
           <CardTitle className="text-3xl font-bold tracking-tighter">Welcome to EasyFile</CardTitle>
           <CardDescription>Sign in or create an account to continue</CardDescription>

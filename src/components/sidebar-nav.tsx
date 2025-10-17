@@ -74,13 +74,13 @@ export function SidebarNav() {
           href="/"
           className="flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D8EFF] rounded-md"
         >
-          <div className="relative w-9 h-9">
+          <div className="relative w-9 h-9 bg-white rounded-md p-1">
             <Image
               src={logoUrl}
               alt="EasyFile Logo"
               width={36}
               height={36}
-              className="object-contain drop-shadow-[0_0_6px_rgba(56,152,255,0.6)] group-hover:scale-110 transition-transform duration-300 ease-in-out"
+              className="object-contain drop-shadow-[0_0_6px_rgba(56,152,255,0.6)] group-hover:scale-110 transition-transform duration-300 ease-in-out text-black"
             />
           </div>
           <h1 className="text-lg font-semibold tracking-tight bg-gradient-to-r from-[#1D8EFF] to-[#00B4FF] bg-clip-text text-transparent group-data-[collapsible=icon]:hidden">

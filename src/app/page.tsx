@@ -23,13 +23,13 @@ export default function LandingPage() {
       <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
         <div className="max-w-4xl mx-auto">
           <Link href="/invoice" className="inline-block mb-6 md:mb-8">
-            <div className="group rounded-full bg-primary/10 p-4 md:p-6 shadow-2xl backdrop-blur-md transform transition-transform duration-300 hover:scale-105">
+            <div className="group rounded-full bg-white p-4 md:p-6 shadow-2xl backdrop-blur-md transform transition-transform duration-300 hover:scale-105">
               <Image
                 src={logoUrl}
                 alt="EasyFile Logo"
                 width={96}
                 height={96}
-                className="transition-transform duration-300 group-hover:scale-110"
+                className="transition-transform duration-300 group-hover:scale-110 text-black"
               />
             </div>
           </Link>
