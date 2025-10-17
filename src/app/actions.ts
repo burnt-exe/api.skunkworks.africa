@@ -1,4 +1,3 @@
-
 'use server';
 
 import { randomUUID } from 'crypto';
@@ -102,7 +101,19 @@ const DocumentInputSchema = z.object({
 const ConvertToXlsxSchema = z.custom<DocumentData>();
 
 const GenerateContractSchema = z.object({
-    contractType: z.enum(['nda', 'employment', 'sales']),
+    contractType: z.enum([
+      // Agreements
+      'nda', 'employment', 'sales', 'lease', 'partnership', 'service', 'consulting', 
+      'licensing', 'franchise', 'settlement', 'loan', 'rental', 'consignment', 'joint_venture',
+      // Legal & Compliance
+      'terms_of_service', 'privacy_policy', 'disclaimer', 'indemnity', 'waiver',
+      // Business & Project Management
+      'statement_of_work', 'business_plan', 'swot_analysis', 'project_charter', 'meeting_minutes',
+      // HR & Internal
+      'offer_letter', 'employee_handbook', 'termination_letter', 'performance_review',
+      // Financial
+      'promissory_note', 'bill_of_sale', 'investment_agreement'
+  ]),
     disclosingParty: z.string().optional(),
     receivingParty: z.string().optional(),
     effectiveDate: z.string().optional(),

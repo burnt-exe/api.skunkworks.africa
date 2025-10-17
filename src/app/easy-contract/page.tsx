@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useTransition } from 'react';
@@ -21,23 +20,84 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { LoaderCircle, Sparkles, FileText, Download } from 'lucide-react';
+import { LoaderCircle, Sparkles, BookUser, Download } from 'lucide-react';
 import { generateContractAction } from '@/app/actions';
 import type { GenerateContractInput } from '@/ai/flows/generate-contract-flow';
 
-type ContractType = 'nda' | 'employment' | 'sales';
+type ContractType = 
+  // Agreements
+  | 'nda' | 'employment' | 'sales' | 'lease' | 'partnership' | 'service' | 'consulting' 
+  | 'licensing' | 'franchise' | 'settlement' | 'loan' | 'rental' | 'consignment' | 'joint_venture'
+  // Legal & Compliance
+  | 'terms_of_service' | 'privacy_policy' | 'disclaimer' | 'indemnity' | 'waiver'
+  // Business & Project Management
+  | 'statement_of_work' | 'business_plan' | 'swot_analysis' | 'project_charter' | 'meeting_minutes'
+  // HR & Internal
+  | 'offer_letter' | 'employee_handbook' | 'termination_letter' | 'performance_review'
+  // Financial
+  | 'promissory_note' | 'bill_of_sale' | 'investment_agreement';
 
-const contractTypes: { value: ContractType; label: string; fields: (keyof GenerateContractInput)[] } = {
-    nda: {
-        value: 'nda',
-        label: 'Non-Disclosure Agreement (NDA)',
-        fields: ['disclosingParty', 'receivingParty', 'effectiveDate', 'term', 'purpose'],
+
+const contractCategories = [
+    {
+        label: "Agreements & Contracts",
+        contracts: [
+            { value: 'nda', label: 'Non-Disclosure Agreement (NDA)', fields: ['disclosingParty', 'receivingParty', 'effectiveDate', 'term', 'purpose'] },
+            { value: 'employment', label: 'Employment Agreement', fields: [] },
+            { value: 'sales', label: 'Sales Agreement', fields: [] },
+            { value: 'lease', label: 'Lease Agreement', fields: [] },
+            { value: 'partnership', label: 'Partnership Agreement', fields: [] },
+            { value: 'service', label: 'Service Level Agreement (SLA)', fields: [] },
+            { value: 'consulting', label: 'Consulting Agreement', fields: [] },
+            { value: 'licensing', label: 'Licensing Agreement', fields: [] },
+            { value: 'franchise', label: 'Franchise Agreement', fields: [] },
+            { value: 'settlement', label: 'Settlement Agreement', fields: [] },
+            { value: 'loan', label: 'Loan Agreement', fields: [] },
+            { value: 'rental', label: 'Rental Agreement', fields: [] },
+            { value: 'consignment', label: 'Consignment Agreement', fields: [] },
+            { value: 'joint_venture', label: 'Joint Venture Agreement', fields: [] },
+        ]
     },
-    // Future contract types can be added here
-    // employment: { value: 'employment', label: 'Employment Agreement', fields: [...] },
-    // sales: { value: 'sales', label: 'Sales Agreement', fields: [...] },
-};
+    {
+        label: "Legal & Compliance",
+        contracts: [
+            { value: 'terms_of_service', label: 'Terms of Service', fields: [] },
+            { value: 'privacy_policy', label: 'Privacy Policy', fields: [] },
+            { value: 'disclaimer', label: 'Disclaimer Statement', fields: [] },
+            { value: 'indemnity', label: 'Indemnity Agreement', fields: [] },
+            { value: 'waiver', label: 'Waiver/Release Form', fields: [] },
+        ]
+    },
+    {
+        label: "Business & Project Management",
+        contracts: [
+            { value: 'statement_of_work', label: 'Statement of Work (SOW)', fields: [] },
+            { value: 'business_plan', label: 'Business Plan', fields: [] },
+            { value: 'swot_analysis', label: 'SWOT Analysis', fields: [] },
+            { value: 'project_charter', label: 'Project Charter', fields: [] },
+            { value: 'meeting_minutes', label: 'Meeting Minutes Template', fields: [] },
+        ]
+    },
+    {
+        label: "Human Resources",
+        contracts: [
+            { value: 'offer_letter', label: 'Job Offer Letter', fields: [] },
+            { value: 'employee_handbook', label: 'Employee Handbook', fields: [] },
+            { value: 'termination_letter', label: 'Termination Letter', fields: [] },
+            { value: 'performance_review', label: 'Performance Review', fields: [] },
+        ]
+    },
+    {
+        label: "Financial",
+        contracts: [
+            { value: 'promissory_note', label: 'Promissory Note', fields: [] },
+            { value: 'bill_of_sale', label: 'Bill of Sale', fields: [] },
+            { value: 'investment_agreement', label: 'Investment Agreement', fields: [] },
+        ]
+    }
+];
 
+const allContractTypes = contractCategories.flatMap(c => c.contracts);
 
 export default function EasyContractPage() {
   const [contractType, setContractType] = useState<ContractType>('nda');
@@ -85,15 +145,20 @@ export default function EasyContractPage() {
   };
 
   const handleDownload = () => {
+      const selectedContract = allContractTypes.find(c => c.value === contractType);
+      const fileName = selectedContract ? selectedContract.label.replace(/\s/g, '_') : 'contract';
       const blob = new Blob([generatedContract], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${contractTypes[contractType].label.replace(/\s/g, '_')}.txt`;
+      link.download = `${fileName}.txt`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
   }
+  
+  const currentContractConfig = allContractTypes.find(c => c.value === contractType);
+  const showFormFields = currentContractConfig && currentContractConfig.fields.length > 0;
 
   const renderField = (field: keyof GenerateContractInput) => {
     const label = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
@@ -127,7 +192,7 @@ export default function EasyContractPage() {
       <Card className="flex flex-col">
         <CardHeader>
           <div className="flex items-center gap-3">
-             <FileText className="h-6 w-6" />
+             <BookUser className="h-6 w-6" />
              <CardTitle className="text-2xl">EasyContract Generator</CardTitle>
           </div>
           <CardDescription>
@@ -141,17 +206,24 @@ export default function EasyContractPage() {
                     <SelectTrigger id="contract-type">
                         <SelectValue placeholder="Select a document type" />
                     </SelectTrigger>
-                    <SelectContent>
-                        {Object.values(contractTypes).map(ct => (
-                            <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
+                    <SelectContent className="max-h-[400px]">
+                        {contractCategories.map(category => (
+                            <React.Fragment key={category.label}>
+                                <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">{category.label}</div>
+                                {category.contracts.map(ct => (
+                                    <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
+                                ))}
+                            </React.Fragment>
                         ))}
                     </SelectContent>
                 </Select>
             </div>
             
-            <div className="space-y-4">
-                {contractTypes[contractType].fields.map(field => renderField(field))}
-            </div>
+            {showFormFields && (
+                <div className="space-y-4 border-t pt-6">
+                    {currentContract_config?.fields.map(field => renderField(field as keyof GenerateContractInput))}
+                </div>
+            )}
 
             <Button onClick={handleGenerate} disabled={isGenerating} className="w-full">
                 {isGenerating ? (
