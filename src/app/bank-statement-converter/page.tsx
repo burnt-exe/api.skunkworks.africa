@@ -25,7 +25,7 @@ import { convertBankStatementAction } from '@/app/actions';
 // ────────────────────────────────────────────────
 // ✅ Lazy load pdf-parse and worker
 // ────────────────────────────────────────────────
-let pdf: any;
+let pdf;
 if (typeof window !== 'undefined') {
   import('pdf-parse/lib/pdf-parse')
     .then((mod) => {
