@@ -62,11 +62,15 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const value = { sidebarState, isMobile, isIconMode, toggleSidebar, setSidebarState };
+
   return (
-    <SidebarContext.Provider
-      value={{ sidebarState, isMobile, isIconMode, toggleSidebar, setSidebarState }}
-    >
-      <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
+    <SidebarContext.Provider value={value}>
+      <TooltipProvider delayDuration={0}>
+        <div className="flex min-h-screen w-full overflow-hidden">
+            {children}
+        </div>
+      </TooltipProvider>
     </SidebarContext.Provider>
   );
 }
@@ -98,28 +102,34 @@ function MobileSidebar({ children }: { children: React.ReactNode }) {
   }, [setSidebarState]);
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          className="fixed inset-0 z-40"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="absolute inset-0 bg-black/50" onClick={() => setSidebarState('hidden')} />
+    <>
+      <header className="flex items-center justify-end p-4 sm:hidden">
+          <SidebarTrigger />
+      </header>
+      <AnimatePresence>
+        {isOpen && (
           <motion.div
-            className="absolute left-0 top-0 h-full w-[85%] max-w-xs bg-background"
-            initial={{ x: '-100%' }}
-            animate={{ x: '0%' }}
-            exit={{ x: '-100%' }}
-            transition={{ ease: 'easeInOut', duration: 0.3 }}
+            className="fixed inset-0 z-40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            {children}
+            <div className="absolute inset-0 bg-black/50" onClick={() => setSidebarState('hidden')} />
+            <motion.aside
+              className="absolute left-0 top-0 h-full w-[85%] max-w-xs bg-background group"
+              data-collapsible="full"
+              initial={{ x: '-100%' }}
+              animate={{ x: '0%' }}
+              exit={{ x: '-100%' }}
+              transition={{ ease: 'easeInOut', duration: 0.3 }}
+            >
+              {children}
+            </motion.aside>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -137,7 +147,7 @@ function DesktopSidebar({ children }: { children: React.ReactNode }) {
 
   return (
     <motion.aside
-      className={cn('fixed left-0 top-0 h-screen overflow-y-auto overflow-x-hidden group z-30')}
+      className={cn('h-screen overflow-y-auto overflow-x-hidden group z-30')}
       initial={false}
       animate={{ width: sidebarWidth[sidebarState] }}
       transition={{ ease: 'easeInOut', duration: 0.3 }}
@@ -210,7 +220,6 @@ SidebarMenu.displayName = 'SidebarMenu';
 
 export function SidebarMenuItem({ children }: { children: React.ReactNode }) {
   const { isIconMode } = useSidebar();
-  // This logic seems reversed, but it correctly wraps the button in a tooltip when in icon mode.
   if (isIconMode) {
     return <>{children}</>;
   }
@@ -251,17 +260,3 @@ export const SidebarMenuButton = React.forwardRef<
   return buttonContent;
 });
 SidebarMenuButton.displayName = 'SidebarMenuButton';
-
-export const SidebarInset = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={cn('flex h-full flex-col', className)}
-      {...props}
-    />
-  );
-});
-SidebarInset.displayName = 'SidebarInset';
