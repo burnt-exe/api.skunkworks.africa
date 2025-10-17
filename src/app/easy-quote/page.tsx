@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import DocumentPreview from '@/components/document-preview';
-import { suggestItemsAction } from '@/app/actions';
+import { suggestItemsAction, convertToXlsxAction, convertPdfToDocxAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import {
   PlusCircle,
@@ -67,6 +67,7 @@ export default function QuotePage() {
   const [data, setData] = useState<DocumentData>(initialData);
   const [aiState, setAiState] = useState({ businessType: 'Consulting', vatRate: '20' });
   const [isPending, startTransition] = useTransition();
+  const [isExporting, startExportTransition] = useTransition();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -187,6 +188,51 @@ export default function QuotePage() {
       }
     });
   };
+  
+    // ────────────────────────────────────────────────
+    // ✅ Export Handlers
+    // ────────────────────────────────────────────────
+    const handleWordExport = () => {
+      startExportTransition(async () => {
+        const dummyPdfDataUri = "data:application/pdf;base64,JVBERi0xLjcK...";
+        const result = await convertPdfToDocxAction({ pdfDataUri: dummyPdfDataUri });
+  
+        if (result.success && result.data?.docxDataUri) {
+          const link = document.createElement('a');
+          link.href = result.data.docxDataUri;
+          link.download = `${data.details.value || 'quote'}.docx`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          toast({
+            title: 'Word Export Failed',
+            description: result.error || 'Unable to generate Word document.',
+            variant: 'destructive',
+          });
+        }
+      });
+    };
+  
+    const handleExcelExport = () => {
+      startExportTransition(async () => {
+        const result = await convertToXlsxAction(data);
+        if (result.success && result.data?.xlsxDataUri) {
+          const link = document.createElement('a');
+          link.href = result.data.xlsxDataUri;
+          link.download = `${data.details.value || 'quote'}.xlsx`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          toast({
+            title: 'Excel Export Failed',
+            description: result.error || 'Unable to generate Excel file.',
+            variant: 'destructive',
+          });
+        }
+      });
+    };
 
   // ────────────────────────────────────────────────
   // ✅ UI Rendering
@@ -510,12 +556,12 @@ export default function QuotePage() {
                 <Printer className="mr-2" />
                 Print / PDF
               </Button>
-              <Button variant="outline" disabled>
-                <Download className="mr-2" />
+              <Button variant="outline" onClick={handleWordExport} disabled={isExporting}>
+                {isExporting ? <LoaderCircle className="animate-spin mr-2" /> : <Download className="mr-2" />}
                 Word
               </Button>
-              <Button variant="outline" disabled>
-                <Download className="mr-2" />
+              <Button variant="outline" onClick={handleExcelExport} disabled={isExporting}>
+                {isExporting ? <LoaderCircle className="animate-spin mr-2" /> : <Download className="mr-2" />}
                 Excel
               </Button>
             </CardContent>

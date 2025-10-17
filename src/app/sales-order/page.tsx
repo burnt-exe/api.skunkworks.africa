@@ -65,6 +65,7 @@ export default function SalesOrderPage() {
   const mounted = useRef(false);
   const [aiState, setAiState] = useState({ businessType: 'Retail', vatRate: '20' });
   const [isPending, startTransition] = useTransition();
+  const [isExporting, startExportTransition] = useTransition();
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -147,7 +148,7 @@ export default function SalesOrderPage() {
   /*                               Export Handlers                              */
   /* -------------------------------------------------------------------------- */
   const handleWordExport = () => {
-    startTransition(async () => {
+    startExportTransition(async () => {
       // This is a placeholder for generating a PDF from the current data
       // A real implementation would generate a PDF on the server and return the data URI
       const dummyPdfDataUri = "data:application/pdf;base64,JVBERi0xLjcK...";
@@ -156,7 +157,12 @@ export default function SalesOrderPage() {
         pdfDataUri: dummyPdfDataUri,
       });
       if (result.success && result.data?.docxDataUri) {
-        window.open(result.data.docxDataUri, '_blank');
+        const link = document.createElement('a');
+        link.href = result.data.docxDataUri;
+        link.download = `${data.details.value || 'sales-order'}.docx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       } else {
         toast({ title: 'Word Export Failed', description: result.error, variant: 'destructive' });
       }
@@ -164,10 +170,15 @@ export default function SalesOrderPage() {
   };
 
   const handleExcelExport = () => {
-    startTransition(async () => {
+    startExportTransition(async () => {
       const result = await convertToXlsxAction(data);
       if (result.success && result.data?.xlsxDataUri) {
-        window.open(result.data.xlsxDataUri, '_blank');
+        const link = document.createElement('a');
+        link.href = result.data.xlsxDataUri;
+        link.download = `${data.details.value || 'sales-order'}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       } else {
         toast({ title: 'Excel Export Failed', description: result.error, variant: 'destructive' });
       }
@@ -369,20 +380,16 @@ export default function SalesOrderPage() {
               <Button onClick={() => window.print()}>
                 <Printer className="mr-2" /> Print / PDF
               </Button>
-              <Button variant="outline" onClick={handleWordExport} disabled={isPending}>
-                {isPending ? <LoaderCircle className="animate-spin" /> : <Download className="mr-2" />} Word
+              <Button variant="outline" onClick={handleWordExport} disabled={isExporting}>
+                {isExporting ? <LoaderCircle className="animate-spin mr-2" /> : <Download className="mr-2" />} Word
               </Button>
-              <Button variant="outline" onClick={handleExcelExport} disabled={isPending}>
-                {isPending ? <LoaderCircle className="animate-spin" /> : <Download className="mr-2" />} Excel
+              <Button variant="outline" onClick={handleExcelExport} disabled={isExporting}>
+                {isExporting ? <LoaderCircle className="animate-spin mr-2" /> : <Download className="mr-2" />} Excel
               </Button>
             </CardContent>
           </Card>
 
-          {isPending && !data ? (
-            <div className="animate-pulse h-[600px] rounded-lg bg-muted/30" />
-          ) : (
-            <DocumentPreview data={data} />
-          )}
+          <DocumentPreview data={data} />
         </div>
       </div>
     </div>
