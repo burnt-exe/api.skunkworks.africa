@@ -2,7 +2,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { EasyFileLogo } from '@/components/logo';
@@ -27,7 +26,7 @@ export default function LandingPage() {
               <EasyFileLogo
                 width={96}
                 height={96}
-                className="transition-transform duration-300 group-hover:scale-110 text-primary"
+                className="transition-transform duration-300 group-hover:scale-110"
               />
             </div>
           </Link>

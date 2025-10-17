@@ -2,8 +2,6 @@
  * @fileoverview Defines the EasyFileLogo component, a reusable SVG logo.
  * It accepts standard SVG props like width, height, and className, allowing
  * for flexible styling and sizing across the application.
- *
- * The logo features a stylized folder with an upload arrow, representing the brand identity of EasyFile.
  */
 import * as React from 'react';
 
@@ -17,28 +15,21 @@ export const EasyFileLogo: React.FC<EasyFileLogoProps> = (props) => (
       aria-label="EasyFile Logo"
       {...props}
     >
-      <defs>
-        <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style={{ stopColor: 'hsl(var(--primary))' }} />
-          <stop offset="100%" style={{ stopColor: 'hsl(var(--primary))', stopOpacity: 0.8 }} />
-        </linearGradient>
-      </defs>
-      {/* Background with rounded corners */}
-      <rect width="100" height="100" rx="20" fill="url(#logo-gradient)" />
-      
-      {/* Folder shape */}
+      {/* Background */}
+      <rect width="100" height="100" rx="18" fill="#1D8EFF" />
+
+      {/* Folder Icon */}
       <path
-        fill="#FFFFFF"
-        d="M20,30 a5,5 0 0,0 -5,5 v30 a5,5 0 0,0 5,5 h60 a5,5 0 0,0 5,-5 v-30 a5,5 0 0,0 -5,-5 h-30 l-5,-5 h-25 a5,5 0 0,0 -5,5 z"
-        transform="translate(0, 5)"
+        fill="#000000"
+        d="M19 28 C16.25 28 14 30.25 14 33 L14 68 C14 70.75 16.25 73 19 73 L81 73 C83.75 73 86 70.75 86 68 L86 40 C86 37.25 83.75 35 81 35 L48 35 L43 30 C42.333 29.333 41.667 28.667 41 28 L19 28 Z"
       />
       
-      {/* Upload Arrow */}
-      <g transform="translate(0, -5)">
-        <path
-          fill="#FFFFFF"
-          d="M50 35 L60 45 L52 45 L52 55 L48 55 L48 45 L40 45 Z"
-        />
+      {/* Upload Arrow inside folder */}
+      <g transform="translate(0, 5)">
+         <path
+            fill="#1D8EFF"
+            d="M50 40 L40 50 L46 50 L46 60 L54 60 L54 50 L60 50 Z"
+          />
       </g>
     </svg>
 );

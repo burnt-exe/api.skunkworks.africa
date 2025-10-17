@@ -15,7 +15,7 @@ import {
   signInWithPopup
 } from 'firebase/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
+import { EasyFileLogo } from '@/components/logo';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -79,7 +79,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
             <div className="mx-auto mb-4">
-                <Image src="/logo.png" alt="EasyFile Logo" width={80} height={80} />
+                <EasyFileLogo width={80} height={80} />
             </div>
           <CardTitle className="text-3xl font-bold tracking-tighter">Welcome to EasyFile</CardTitle>
           <CardDescription>Sign in or create an account to continue</CardDescription>
