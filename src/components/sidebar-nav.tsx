@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   SidebarHeader,
   SidebarMenu,
@@ -28,7 +29,6 @@ import { useUser, useAuth } from '@/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { EasyFileLogo } from '@/components/logo';
 
 /**
  * Sidebar navigation for EasyFile Suite.
@@ -40,6 +40,7 @@ export function SidebarNav() {
   const { toggleCalculator } = useCalculator();
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
+  const logoUrl = 'https://raw.githubusercontent.com/burnt-exe/easyfile/1fd577db3831ef09cee1b97adcf33bd0e817e24c/logo.svg';
 
   const handleSignOut = async () => {
     await auth.signOut();
@@ -74,7 +75,11 @@ export function SidebarNav() {
           className="flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D8EFF] rounded-md"
         >
           <div className="relative w-9 h-9">
-            <EasyFileLogo
+            <Image
+              src={logoUrl}
+              alt="EasyFile Logo"
+              width={36}
+              height={36}
               className="object-contain drop-shadow-[0_0_6px_rgba(56,152,255,0.6)] group-hover:scale-110 transition-transform duration-300 ease-in-out"
             />
           </div>

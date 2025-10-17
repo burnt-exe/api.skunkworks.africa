@@ -22,6 +22,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'picsum.photos',
       },
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+      }
     ],
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',

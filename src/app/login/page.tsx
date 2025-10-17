@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,6 @@ import {
   signInWithPopup
 } from 'firebase/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { EasyFileLogo } from '@/components/logo';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -26,6 +26,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect') || '/';
+  const logoUrl = 'https://raw.githubusercontent.com/burnt-exe/easyfile/1fd577db3831ef09cee1b97adcf33bd0e817e24c/logo.svg';
 
 
   const handleAuthAction = (action: 'login' | 'signup') => {
@@ -79,7 +80,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
             <div className="mx-auto mb-4">
-                <EasyFileLogo width={80} height={80} />
+                <Image src={logoUrl} alt="EasyFile Logo" width={80} height={80} />
             </div>
           <CardTitle className="text-3xl font-bold tracking-tighter">Welcome to EasyFile</CardTitle>
           <CardDescription>Sign in or create an account to continue</CardDescription>
