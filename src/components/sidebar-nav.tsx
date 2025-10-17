@@ -46,7 +46,6 @@ export function SidebarNav() {
       { href: '/payslip', label: 'Payslip', icon: Users },
       { href: '/easy-stock-inventory', label: 'EasyStock Inventory', icon: Package },
       { href: '/easy-docu-convert', label: 'EasyDocuConvert', icon: FileCog },
-      { href: '/bank-statement-converter', label: 'Bank Statement Converter', icon: FileCog },
     ],
     []
   );

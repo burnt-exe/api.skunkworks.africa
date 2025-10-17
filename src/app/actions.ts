@@ -12,13 +12,17 @@ import {
   type GenerateLandingPageImageInput,
 } from '@/ai/flows/generate-landing-page-image';
 import {
-  convertBankStatement,
-  type ConvertBankStatementInput,
-} from '@/ai/flows/convert-bank-statement-flow';
-import {
   convertPdfToDocx,
   type ConvertPdfToDocxInput,
 } from '@/ai/flows/convert-pdf-to-docx-flow';
+import {
+  convertPdfToXlsx,
+  type ConvertPdfToXlsxInput,
+} from '@/ai/flows/convert-pdf-to-xlsx-flow';
+import {
+  convertPdfToImage,
+  type ConvertPdfToImageInput,
+} from '@/ai/flows/convert-pdf-to-image-flow';
 import {
   convertToXlsx,
   type ConvertToXlsxInput,
@@ -80,11 +84,7 @@ const GenerateLandingPageImageSchema = z.object({
   prompt: z.string().min(1, 'Prompt is required'),
 });
 
-const ConvertBankStatementSchema = z.object({
-  textContent: z.string().min(1, 'Text content is required'),
-});
-
-const ConvertPdfToDocxSchema = z.object({
+const PdfInputSchema = z.object({
   pdfDataUri: z.string().url('Valid data URI required'),
 });
 
@@ -129,28 +129,6 @@ export async function generateLandingPageImageAction(
 }
 
 /**
- * Convert uploaded bank statement PDFs into structured financial data.
- */
-export async function convertBankStatementAction(
-  input: ConvertBankStatementInput,
-): Promise<
-  ServerActionResponse<Awaited<ReturnType<typeof convertBankStatement>>>
-> {
-  const traceId = randomUUID();
-  try {
-    ConvertBankStatementSchema.parse(input);
-    const data = await convertBankStatement(input);
-    return ok(data, traceId);
-  } catch (error) {
-    return handleActionError(
-      'Error during bank statement conversion',
-      error,
-      traceId,
-    );
-  }
-}
-
-/**
  * Converts an uploaded PDF file to a DOCX document.
  */
 export async function convertPdfToDocxAction(
@@ -158,11 +136,43 @@ export async function convertPdfToDocxAction(
 ): Promise<ServerActionResponse<Awaited<ReturnType<typeof convertPdfToDocx>>>> {
   const traceId = randomUUID();
   try {
-    ConvertPdfToDocxSchema.parse(input);
+    PdfInputSchema.parse(input);
     const data = await convertPdfToDocx(input);
     return ok(data, traceId);
   } catch (error) {
     return handleActionError('Error during PDF to DOCX conversion', error, traceId);
+  }
+}
+
+/**
+ * Converts an uploaded PDF file to an XLSX document.
+ */
+export async function convertPdfToXlsxAction(
+  input: ConvertPdfToXlsxInput,
+): Promise<ServerActionResponse<Awaited<ReturnType<typeof convertPdfToXlsx>>>> {
+  const traceId = randomUUID();
+  try {
+    PdfInputSchema.parse(input);
+    const data = await convertPdfToXlsx(input);
+    return ok(data, traceId);
+  } catch (error) {
+    return handleActionError('Error during PDF to XLSX conversion', error, traceId);
+  }
+}
+
+/**
+ * Converts an uploaded PDF file to a JPG image.
+ */
+export async function convertPdfToImageAction(
+  input: ConvertPdfToImageInput,
+): Promise<ServerActionResponse<Awaited<ReturnType<typeof convertPdfToImage>>>> {
+  const traceId = randomUUID();
+  try {
+    PdfInputSchema.parse(input);
+    const data = await convertPdfToImage(input);
+    return ok(data, traceId);
+  } catch (error) {
+    return handleActionError('Error during PDF to Image conversion', error, traceId);
   }
 }
 
