@@ -11,11 +11,11 @@ import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { UploadCloud, File, X, CheckCircle, LoaderCircle, Sparkles } from 'lucide-react';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection } from 'firebase/firestore';
+import { addDoc, collection } from 'firebase/firestore';
 
 /**
- * A component for uploading files to Firebase Storage with progress indication.
+ * A component for uploading files directly to Firebase Storage and tracking the progress.
+ * This approach avoids Server Action payload limits.
  */
 export default function StorageUploader() {
   const { storage, firestore } = useFirebase();
@@ -59,58 +59,67 @@ export default function StorageUploader() {
     setIsUploading(true);
     setIsComplete(false);
 
-    const uploadsCollection = collection(firestore, 'companies', user.uid, 'uploads');
-    const uploadDocRef = await addDocumentNonBlocking(uploadsCollection, {
+    try {
+      // 1. Create a document in Firestore to track the upload status.
+      const uploadsCollection = collection(firestore, 'companies', user.uid, 'uploads');
+      const uploadDocRef = await addDoc(uploadsCollection, {
         fileName: file.name,
         createdAt: new Date().toISOString(),
         status: 'uploading',
         userId: user.uid,
-    });
-    
-    if (!uploadDocRef) {
-        setIsUploading(false);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not create upload record in Firestore.' });
-        return;
-    }
+      });
 
-    toast({
+      toast({
         title: 'Initiating Canvas...',
         description: `Your document "${file.name}" is being prepared.`,
-    });
+      });
+      
+      // 2. Define the multi-tenant storage path.
+      const storagePath = `uploads/${user.uid}/${uploadDocRef.id}/${file.name}`;
+      const storageRef = ref(storage, storagePath);
+      const task = uploadBytesResumable(storageRef, file);
+      
+      setUploadTask(task);
 
-    const storagePath = `uploads/${user.uid}/${uploadDocRef.id}/${file.name}`;
-    const storageRef = ref(storage, storagePath);
-    const task = uploadBytesResumable(storageRef, file);
-
-    setUploadTask(task);
-
-    task.on(
-      'state_changed',
-      (snapshot) => {
-        const currentProgress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setProgress(currentProgress);
-      },
-      (error) => {
-        setIsUploading(false);
-        setUploadTask(null);
-        toast({
-          variant: 'destructive',
-          title: 'A Moment of Turbulence',
-          description: `The upload was interrupted: ${error.message}`,
-        });
-      },
-      () => {
-        setIsUploading(false);
-        setIsComplete(true);
-        setUploadTask(null);
-        getDownloadURL(task.snapshot.ref).then((downloadURL) => {
+      // 3. Listen to upload state changes.
+      task.on(
+        'state_changed',
+        (snapshot) => {
+          const currentProgress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setProgress(currentProgress);
+        },
+        (error) => {
+          setIsUploading(false);
+          setUploadTask(null);
           toast({
-            title: 'Canvas Ready',
-            description: `"${file.name}" has arrived. The vision is taking shape.`,
+            variant: 'destructive',
+            title: 'A Moment of Turbulence',
+            description: `The upload was interrupted: ${error.message}`,
           });
-        });
-      }
-    );
+        },
+        () => {
+          // 4. On successful upload, finalize the state.
+          setIsUploading(false);
+          setIsComplete(true);
+          setUploadTask(null);
+          getDownloadURL(task.snapshot.ref).then((downloadURL) => {
+            toast({
+              title: 'Canvas Ready',
+              description: `"${file.name}" has arrived. The backend will now process it.`,
+            });
+            // The Firebase Function will now take over automatically.
+          });
+        }
+      );
+
+    } catch (error) {
+       setIsUploading(false);
+       toast({
+         variant: 'destructive',
+         title: 'Firestore Error',
+         description: error instanceof Error ? error.message : 'Could not create upload record in Firestore.',
+       });
+    }
   };
 
   const handleCancel = () => {

@@ -48,6 +48,7 @@ export const processPdfForImageExtraction = onObjectFinalized(
     logger.log(`Processing new PDF: ${filePath}`);
 
     // Extract companyId and uploadId from the file path for multi-tenancy
+    // Example path: uploads/{companyId}/{uploadId}/{fileName}
     const pathParts = filePath.split('/');
     if (pathParts.length < 4) {
       logger.error('Invalid file path structure:', filePath);
@@ -55,6 +56,7 @@ export const processPdfForImageExtraction = onObjectFinalized(
     }
     const companyId = pathParts[1];
     const uploadId = pathParts[2];
+    const uploadDocRef = db.doc(`companies/${companyId}/uploads/${uploadId}`);
 
     try {
       // Download the PDF file from Storage
@@ -63,64 +65,66 @@ export const processPdfForImageExtraction = onObjectFinalized(
 
       // Load the PDF using pdf-lib
       const pdfDoc = await PDFDocument.load(pdfBuffer);
-      const imageObjects = pdfDoc.getObjects().filter((obj) => {
-        return obj.dict.get('Subtype')?.toString() === '/Image';
+      const imageObjects = pdfDoc.getObjects().filter((obj: any) => {
+        // Find all image XObjects in the PDF
+        return obj.dict?.get('Subtype')?.toString() === '/Image';
       });
       
       logger.log(`Found ${imageObjects.length} potential image objects in PDF.`);
       
-      if(imageObjects.length === 0) {
+      if (imageObjects.length === 0) {
           logger.log("No extractable images found in the PDF.");
-          await db.doc(`companies/${companyId}/uploads/${uploadId}`).set({ status: 'processed_no_images' }, { merge: true });
+          await uploadDocRef.set({ status: 'processed_no_images' }, { merge: true });
           return;
       }
 
-      // Process each image object
-      const imageProcessingPromises = imageObjects.map(async (imageObj, index) => {
+      // Process each image object in parallel
+      const imageProcessingPromises = imageObjects.map(async (imageObj: any, index) => {
           try {
-            // This is a simplified extraction. pdf-lib doesn't have a direct "extract" API,
-            // so we access the raw bytes. This works for many common image types embedded in PDFs.
-            const imageBytes = (imageObj as any).contents;
+            const imageBytes = imageObj.contents;
 
             if (!imageBytes || imageBytes.length === 0) {
                 logger.warn(`Skipping image object at index ${index} due to empty content.`);
                 return null;
             }
             
-            // Assume JPEG for simplicity, but could be improved to detect image type
+            // This is a basic extraction. A more robust solution would inspect the image header
+            // to determine the correct file type (jpeg, png, etc.).
             const imageName = `image_${index}.jpg`;
             const imageStoragePath = `extracted/${companyId}/${uploadId}/${imageName}`;
             const imageFile = bucket.file(imageStoragePath);
             
-            // Save the extracted image back to Storage
+            // Save the extracted image bytes to a new file in Storage
             await imageFile.save(Buffer.from(imageBytes), {
               metadata: { contentType: 'image/jpeg' },
             });
 
-            // Create a metadata document in Firestore for the extracted image
+            // Create a metadata document in the top-level 'images' collection
             const imageDocRef = db.collection('images').doc();
             await imageDocRef.set({
               companyId: companyId,
               originalPdfPath: filePath,
               extractedImagePath: imageStoragePath,
               createdAt: new Date().toISOString(),
-              tags: [], // Placeholder for future AI tagging
-              thumbnailUrl: '', // Placeholder for thumbnail generation
+              uploadId: uploadId, // Link back to the original upload
+              // Placeholders for future enhancements
+              tags: [], 
+              thumbnailUrl: '',
             });
 
             logger.log(`Successfully extracted and saved: ${imageStoragePath}`);
             return imageDocRef.id;
         } catch (imgError) {
             logger.error(`Failed to process image object at index ${index} from PDF ${filePath}:`, imgError);
-            return null; // Continue processing other images
+            return null; // Return null on failure to filter out later
         }
       });
 
       const results = await Promise.all(imageProcessingPromises);
-      const extractedImageIds = results.filter(id => id !== null);
+      const extractedImageIds = results.filter((id): id is string => id !== null);
 
-      // Update the original upload document with the results
-      await db.doc(`companies/${companyId}/uploads/${uploadId}`).set({
+      // Update the original upload document with the final status and extracted image IDs
+      await uploadDocRef.set({
         status: 'processed_complete',
         extractedImageCount: extractedImageIds.length,
         extractedImageIds: extractedImageIds,
@@ -130,7 +134,7 @@ export const processPdfForImageExtraction = onObjectFinalized(
 
     } catch (error) {
       logger.error(`Failed to process PDF ${filePath}:`, error);
-      await db.doc(`companies/${companyId}/uploads/${uploadId}`).set({ status: 'processing_failed', error: (error as Error).message }, { merge: true });
+      await uploadDocRef.set({ status: 'processing_failed', error: (error as Error).message }, { merge: true });
     }
   }
 );
