@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, ChangeEvent } from 'react';
-import { useFirebase } from '@/firebase/client-provider';
+import { useFirebase } from '@/firebase/provider';
 import { useUser } from '@/firebase/provider';
 import { ref, uploadBytesResumable, getDownloadURL, UploadTask } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
