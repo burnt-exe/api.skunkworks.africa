@@ -114,15 +114,23 @@ export default function InvoicePage() {
 
   const handleAiSuggest = () => {
     startTransition(async () => {
+      // Use the main form's data for suggestions
+      const businessType = data.from.name || 'General Business';
+      const vatRate = (data.vatRate ?? 0) / 100;
+
+      // Update the AI assistant's input fields to reflect what's being used
+      setAiState({ businessType, vatRate: String(data.vatRate ?? 0) });
+
       const result = await suggestItemsAction({
-        businessType: aiState.businessType,
-        vatRate: parseFloat(aiState.vatRate) / 100,
+        businessType,
+        vatRate,
       });
+
       if (result.success && result.data) {
         setData((prev) => ({ ...prev, lineItems: result.data! }));
         toast({
           title: 'Success',
-          description: 'AI has suggested new line items.',
+          description: `AI has suggested new line items for a ${businessType}.`,
           variant: 'default',
         });
       } else {
@@ -191,6 +199,7 @@ export default function InvoicePage() {
                           id="businessType"
                           value={aiState.businessType}
                           onChange={(e) => setAiState({ ...aiState, businessType: e.target.value })}
+                          placeholder="e.g., Consulting, Retail"
                         />
                       </div>
                       <div>
@@ -211,6 +220,9 @@ export default function InvoicePage() {
                       )}
                       Suggest Items
                     </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Clicking "Suggest" will use the main company name and VAT rate from the form below.
+                    </p>
                   </CardContent>
                 </CollapsibleContent>
               </Card>
@@ -418,3 +430,5 @@ export default function InvoicePage() {
     </div>
   );
 }
+
+    
