@@ -27,6 +27,10 @@ import {
   convertToXlsx,
   type ConvertToXlsxInput,
 } from '@/ai/flows/convert-to-xlsx-flow';
+import {
+  convertToPdf,
+  type ConvertToPdfInput,
+} from '@/ai/flows/convert-to-pdf-flow';
 import type { DocumentData } from '@/types';
 
 /* -------------------------------------------------------------------------- */
@@ -86,6 +90,11 @@ const GenerateLandingPageImageSchema = z.object({
 
 const PdfInputSchema = z.object({
   pdfDataUri: z.string().url('Valid data URI required'),
+});
+
+const DocumentInputSchema = z.object({
+  fileDataUri: z.string().url('Valid data URI required'),
+  sourceType: z.enum(['docx', 'xlsx', 'jpeg', 'png']),
 });
 
 const ConvertToXlsxSchema = z.custom<DocumentData>();
@@ -189,5 +198,21 @@ export async function convertToXlsxAction(
     return ok(data, traceId);
   } catch (error) {
     return handleActionError('Error during XLSX conversion', error, traceId);
+  }
+}
+
+/**
+ * Converts an uploaded document (DOCX, XLSX, image) to a PDF.
+ */
+export async function convertToPdfAction(
+  input: ConvertToPdfInput,
+): Promise<ServerActionResponse<Awaited<ReturnType<typeof convertToPdf>>>> {
+  const traceId = randomUUID();
+  try {
+    DocumentInputSchema.parse(input);
+    const data = await convertToPdf(input);
+    return ok(data, traceId);
+  } catch (error) {
+    return handleActionError('Error during PDF conversion', error, traceId);
   }
 }

@@ -42,6 +42,7 @@
     "framer-motion": "^11.3.19",
     "genkit": "^1.1.0",
     "lucide-react": "^0.417.0",
+    "mammoth": "^1.7.2",
     "next": "15.5.5",
     "papaparse": "^5.4.1",
     "pdf-parse": "^1.1.1",

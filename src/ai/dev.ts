@@ -7,3 +7,4 @@ import '@/ai/flows/convert-pdf-to-docx-flow.ts';
 import '@/ai/flows/convert-to-xlsx-flow.ts';
 import '@/ai/flows/convert-pdf-to-xlsx-flow.ts';
 import '@/ai/flows/convert-pdf-to-image-flow.ts';
+import '@/ai/flows/convert-to-pdf-flow.ts';
