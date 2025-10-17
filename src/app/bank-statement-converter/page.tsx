@@ -1,7 +1,7 @@
+
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import NextDynamic from 'next/dynamic'; // ✅ renamed to avoid conflict
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -21,20 +21,20 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { convertBankStatementAction } from '@/app/actions';
+import { GlobalWorkerOptions } from 'pdfjs-dist';
 
 // ────────────────────────────────────────────────
-// ✅ Lazy load pdf-parse and worker
+// ✅ Configure PDF.js worker and lazy load pdf-parse
 // ────────────────────────────────────────────────
-let pdf;
+let pdf: (dataBuffer: ArrayBuffer | Buffer) => Promise<{ text: string; }>;
 if (typeof window !== 'undefined') {
+  // Set workerSrc before pdf-parse is imported.
+  // This points to the copy of the worker file hosted by a CDN.
+  GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${(GlobalWorkerOptions as any).version}/build/pdf.worker.mjs`;
+
   import('pdf-parse/lib/pdf-parse')
     .then((mod) => {
       pdf = mod.default || mod;
-      try {
-        (window as any).pdfjsWorker = import('pdfjs-dist/build/pdf.worker.mjs');
-      } catch {
-        console.warn('PDF.js worker could not be initialized.');
-      }
     })
     .catch((err) => console.error('Failed to load pdf-parse:', err));
 }
