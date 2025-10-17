@@ -47,7 +47,7 @@ export default function StorageUploader() {
   };
 
   const handleUpload = async () => {
-    if (!file || !user) {
+    if (!file || !user || !firestore) {
       toast({
         variant: 'destructive',
         title: 'Upload Error',
@@ -60,19 +60,24 @@ export default function StorageUploader() {
     setIsComplete(false);
 
     const uploadsCollection = collection(firestore, 'companies', user.uid, 'uploads');
-    const uploadDocRefPromise = addDocumentNonBlocking(uploadsCollection, {
+    const uploadDocRef = await addDocumentNonBlocking(uploadsCollection, {
         fileName: file.name,
         createdAt: new Date().toISOString(),
         status: 'uploading',
         userId: user.uid,
     });
+    
+    if (!uploadDocRef) {
+        setIsUploading(false);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not create upload record in Firestore.' });
+        return;
+    }
 
     toast({
         title: 'Starting Upload...',
         description: `Your file "${file.name}" is being uploaded.`,
     });
 
-    const uploadDocRef = await uploadDocRefPromise;
     const storagePath = `uploads/${user.uid}/${uploadDocRef.id}/${file.name}`;
     const storageRef = ref(storage, storagePath);
     const task = uploadBytesResumable(storageRef, file);
@@ -181,7 +186,7 @@ export default function StorageUploader() {
         )}
 
         <div className="flex gap-2">
-          <Button onClick={handleUpload} disabled={!file || isUploading || isComplete} className="flex-1">
+          <Button onClick={handleUpload} disabled={!file || isUploading || isComplete || !user} className="flex-1">
             {isUploading ? (
               <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
             ) : isComplete ? (

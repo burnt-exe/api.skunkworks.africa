@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useTransition, useEffect, useMemo } from 'react';
@@ -17,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Sparkles, Trash2, LoaderCircle, Printer, Download, Upload, ChevronDown, Save } from 'lucide-react';
 import React from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { useFirestore, useUser, initiateAnonymousSignIn, addDocumentNonBlocking } from '@/firebase';
+import { useFirestore, useUser, addDocumentNonBlocking } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import StorageUploader from '@/components/storage-uploader';
 
@@ -75,9 +74,11 @@ export default function InvoicePage() {
     const { name, value } = e.target;
     const keys = name.split('.');
     if (keys.length > 1) {
+      const parentKey = keys[0] as keyof DocumentData;
+      const childKey = keys[1];
       setData((prev) => ({
         ...prev,
-        [keys[0]]: { ...prev[keys[0] as keyof DocumentData], [keys[1]]: value },
+        [parentKey]: { ...(prev[parentKey] as object), [childKey]: value },
       }));
     } else {
       setData((prev) => ({ ...prev, [name]: value }));
@@ -97,7 +98,7 @@ export default function InvoicePage() {
 
   const handleLineItemChange = (index: number, field: keyof LineItem, value: string | number) => {
     const newLineItems = [...data.lineItems];
-    const parsedValue = typeof value === 'string' && field !== 'description' ? parseFloat(value) : value;
+    const parsedValue = typeof value === 'string' && field !== 'description' ? parseFloat(value) || 0 : value;
     newLineItems[index] = { ...newLineItems[index], [field]: parsedValue };
     setData((prev) => ({ ...prev, lineItems: newLineItems }));
   };
@@ -116,11 +117,9 @@ export default function InvoicePage() {
 
   const handleAiSuggest = () => {
     startTransition(async () => {
-      // Use the main form's data for suggestions
       const businessType = data.from.name || 'General Business';
       const vatRate = (data.vatRate ?? 0) / 100;
 
-      // Update the AI assistant's input fields to reflect what's being used
       setAiState({ businessType, vatRate: String(data.vatRate ?? 0) });
 
       const result = await suggestItemsAction({
@@ -151,7 +150,7 @@ export default function InvoicePage() {
 
 
   const handleSaveInvoice = () => {
-    if (!user) {
+    if (!user || !firestore) {
       toast({
         title: 'Error',
         description: 'You must be logged in to save an invoice.',
@@ -163,8 +162,8 @@ export default function InvoicePage() {
     const invoiceDataForDb = {
       ...data,
       totalAmount,
-      status: 'draft', // Add a default status
-      companyId: user.uid, // Use user's UID as companyId
+      status: 'draft',
+      companyId: user.uid,
     };
 
     const invoicesCollection = collection(firestore, 'companies', user.uid, 'invoices');
@@ -474,5 +473,3 @@ export default function InvoicePage() {
     </div>
   );
 }
-
-    
