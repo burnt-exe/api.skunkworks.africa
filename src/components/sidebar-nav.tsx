@@ -29,6 +29,7 @@ import { useUser, useAuth } from '@/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { EasyFileLogo } from '@/components/logo';
 
 /**
  * Sidebar navigation for EasyFile Suite.
