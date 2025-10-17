@@ -256,8 +256,9 @@ export const SidebarMenuButton = React.forwardRef<
       ref={ref}
       variant="ghost"
       className={cn(
-        'w-full justify-start h-auto p-3',
-        isIconMode && 'justify-center',
+        'w-full justify-start h-auto',
+        'group-data-[collapsible=compact]:p-3 group-data-[collapsible=compact]:justify-center',
+        'group-data-[collapsible=full]:px-3 group-data-[collapsible=full]:py-2 group-data-[collapsible=full]:gap-3',
         isActive && 'bg-accent text-accent-foreground',
         props.className
       )}
