@@ -21,23 +21,6 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { convertBankStatementAction } from '@/app/actions';
-import { GlobalWorkerOptions } from 'pdfjs-dist';
-
-// ────────────────────────────────────────────────
-// ✅ Configure PDF.js worker and lazy load pdf-parse
-// ────────────────────────────────────────────────
-let pdf: (dataBuffer: ArrayBuffer | Buffer) => Promise<{ text: string; }>;
-if (typeof window !== 'undefined') {
-  // Set workerSrc before pdf-parse is imported.
-  // This points to the copy of the worker file hosted by a CDN.
-  GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${(GlobalWorkerOptions as any).version}/build/pdf.worker.mjs`;
-
-  import('pdf-parse/lib/pdf-parse')
-    .then((mod) => {
-      pdf = mod.default || mod;
-    })
-    .catch((err) => console.error('Failed to load pdf-parse:', err));
-}
 
 export const dynamic = 'force-dynamic';
 
@@ -80,7 +63,11 @@ export default function BankStatementConverterPage() {
 
     startTransition(async () => {
       try {
-        if (!pdf) throw new Error('PDF parser not initialized. Refresh and retry.');
+        // Dynamically import pdf-parse and configure worker
+        const { default: pdf } = await import('pdf-parse/lib/pdf-parse');
+        const pdfjs = await import('pdfjs-dist/build/pdf');
+        pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.mjs`;
+
         const buf = await file.arrayBuffer();
         const data = await pdf(buf);
         const text = data.text.trim();
