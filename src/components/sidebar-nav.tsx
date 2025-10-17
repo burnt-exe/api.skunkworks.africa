@@ -83,6 +83,7 @@ export function SidebarNav() {
                 <Link
                   href={href}
                   aria-current={isActive ? 'page' : undefined}
+                  className="flex items-center"
                 >
                   <Icon
                     aria-hidden="true"
@@ -91,7 +92,7 @@ export function SidebarNav() {
                       isActive && 'scale-110 text-primary'
                     )}
                   />
-                  <span className={cn('whitespace-nowrap transition-opacity duration-200', isIconMode ? 'opacity-0 w-0' : 'opacity-100 w-auto')}>
+                  <span className={cn('ml-3 whitespace-nowrap transition-opacity duration-200', isIconMode ? 'opacity-0 w-0' : 'opacity-100 w-auto')}>
                     {label}
                   </span>
                 </Link>
@@ -108,15 +109,15 @@ export function SidebarNav() {
                 'hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
               )}
             >
-              <>
+              <div className="flex items-center">
                 <Calculator
                   aria-hidden="true"
                   className='w-5 h-5 shrink-0 transition-transform duration-200'
                 />
-                <span className={cn('whitespace-nowrap transition-opacity duration-200', isIconMode ? 'opacity-0 w-0' : 'opacity-100 w-auto')}>
+                <span className={cn('ml-3 whitespace-nowrap transition-opacity duration-200', isIconMode ? 'opacity-0 w-0' : 'opacity-100 w-auto')}>
                   Calculator
                 </span>
-              </>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
       </SidebarMenu>

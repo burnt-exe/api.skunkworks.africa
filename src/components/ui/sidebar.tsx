@@ -103,9 +103,6 @@ function MobileSidebar({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <header className="flex items-center justify-end p-4 sm:hidden">
-          <SidebarTrigger />
-      </header>
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -142,17 +139,19 @@ function DesktopSidebar({ children }: { children: React.ReactNode }) {
   const sidebarVariants = {
     full: {
       width: 'auto',
+      minWidth: '200px',
       maxWidth: '256px',
-      minWidth: '200px', // Ensure it doesn't get too small
       transition: { ease: 'easeInOut', duration: 0.3 },
     },
     compact: {
       width: '64px',
+      minWidth: '64px',
       transition: { ease: 'easeInOut', duration: 0.3 },
     },
     hidden: {
       width: '0px',
       minWidth: '0px',
+      overflow: 'hidden',
       transition: { ease: 'easeInOut', duration: 0.3 },
     },
   };
@@ -211,10 +210,10 @@ export const SidebarHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'flex h-16 shrink-0 items-center',
-      'transition-all duration-300 ease-in-out',
-      'group-data-[collapsible=compact]:justify-center group-data-[collapsible=compact]:px-2',
+      'flex h-16 shrink-0 items-center transition-all duration-300 ease-in-out',
       'group-data-[collapsible=full]:justify-start group-data-[collapsible=full]:px-4',
+      'group-data-[collapsible=compact]:justify-center group-data-[collapsible=compact]:px-2',
+      'group-data-[collapsible=hidden]:px-0 group-data-[collapsible=hidden]:w-0',
       className
     )}
     {...props}
@@ -229,10 +228,10 @@ export const SidebarMenu = React.forwardRef<
   <nav
     ref={ref}
     className={cn(
-        'flex flex-col flex-1 space-y-1 overflow-y-auto px-2 py-4',
-        'transition-all duration-300 ease-in-out',
-        'group-data-[collapsible=compact]:px-2',
+        'flex flex-col flex-1 space-y-1 overflow-y-auto py-4 transition-all duration-300 ease-in-out',
         'group-data-[collapsible=full]:px-4',
+        'group-data-[collapsible=compact]:px-2',
+        'group-data-[collapsible=hidden]:px-0',
         className
     )}
     {...props}
@@ -256,9 +255,9 @@ export const SidebarMenuButton = React.forwardRef<
       ref={ref}
       variant="ghost"
       className={cn(
-        'w-full justify-start h-auto',
+        'w-full h-auto',
+        'group-data-[collapsible=full]:justify-start group-data-[collapsible=full]:px-3 group-data-[collapsible=full]:py-2 group-data-[collapsible=full]:gap-3',
         'group-data-[collapsible=compact]:p-3 group-data-[collapsible=compact]:justify-center',
-        'group-data-[collapsible=full]:px-3 group-data-[collapsible=full]:py-2 group-data-[collapsible=full]:gap-3',
         isActive && 'bg-accent text-accent-foreground',
         props.className
       )}
