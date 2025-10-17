@@ -19,6 +19,7 @@ import React from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useFirestore, useUser, initiateAnonymousSignIn, addDocumentNonBlocking } from '@/firebase';
 import { collection } from 'firebase/firestore';
+import StorageUploader from '@/components/storage-uploader';
 
 const initialData: DocumentData = {
   title: 'INVOICE',
@@ -158,17 +159,17 @@ export default function InvoicePage() {
       });
       return;
     }
-  
+
     const invoiceDataForDb = {
       ...data,
       totalAmount,
       status: 'draft', // Add a default status
       companyId: user.uid, // Use user's UID as companyId
     };
-  
+
     const invoicesCollection = collection(firestore, 'companies', user.uid, 'invoices');
     addDocumentNonBlocking(invoicesCollection, invoiceDataForDb);
-  
+
     toast({
       title: 'Success',
       description: 'Invoice saved successfully!',
@@ -226,6 +227,7 @@ export default function InvoicePage() {
           <p className="text-muted-foreground">Fill in the details to generate your invoice.</p>
           <Separator className="my-6" />
           <div className="space-y-6">
+            <StorageUploader />
             <Collapsible asChild>
               <Card>
                 <CollapsibleTrigger className="w-full">

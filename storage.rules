@@ -1,0 +1,25 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Allow users to upload files to a designated 'uploads' folder under their own user ID.
+    // - The user must be authenticated (request.auth != null).
+    // - The path must match the pattern 'uploads/{userId}/{allPaths=**}'.
+    // - The uploaded file's userId must match the authenticated user's UID.
+    // - The file size is limited to 50MB.
+    match /uploads/{userId}/{allPaths=**} {
+      allow write: if request.auth != null && request.auth.uid == userId && request.resource.size < 50 * 1024 * 1024;
+    }
+
+    // Allow users to read files from the 'extracted' folder that correspond to their user ID.
+    // This rule allows users to access images that were extracted from their own PDF uploads.
+    match /extracted/{userId}/{allPaths=**} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // By default, deny all other reads and writes to ensure security.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

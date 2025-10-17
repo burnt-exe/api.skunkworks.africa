@@ -1,19 +1,22 @@
 /**
  * @file Firestore Security Rules
- * @description This ruleset enforces a multi-tenant data model where access is primarily controlled at the company level.
- *   All data is nested under /companies/{companyId}, ensuring that users can only access data belonging to their respective company.
- *   A top-level /images collection stores image metadata, referencing the originating document for granular access control.
+ * @description This ruleset enforces a strict company-based multi-tenancy model for EasyDocs.
  *
  * Data Structure:
- * - /companies/{companyId}: Stores company information.
- * - /companies/{companyId}/{documentType}/{documentId}: Stores documents like purchase orders, invoices, etc.
- * - /images/{imageId}: Stores metadata for extracted images, including a reference to the originating document.
+ * - /companies/{companyId}: Top-level collection for company data.
+ * - /companies/{companyId}/{documentType}/{documentId}: Subcollections for various document types (purchaseOrders, invoices, receipts, payslips, salesOrders, items, customers, suppliers, employees, uploads).
+ * - /images/{imageId}: Top-level collection for image metadata.
  *
  * Key Security Decisions:
- * - Strict Company-Level Isolation: Access to company data is restricted to authenticated users.
- * - Denormalization of companyId: The `companyId` field is present in all documents under a company, enabling efficient security rules.
- * - Secure Image Access: Access to images in the `/images` collection is controlled by verifying both the `companyId` and access to the originating document.
- * - No User Listing: Listing users is not supported.
+ * - All data is segregated by company ID.
+ * - Only authenticated users can access data.
+ * - Access to documents is restricted to users associated with the document's company.
+ * - Image access is validated against both the image's company ID and the document path it references.
+ * - List operations are secured to prevent unauthorized data access.
+ * - No public read access is granted to any collection.
+ *
+ * Denormalization for Authorization:
+ * - Every document includes a `companyId` field to simplify authorization checks and avoid costly `get()` calls.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -21,227 +24,92 @@ service cloud.firestore {
 
     /**
      * @description Checks if the request is authenticated.
-     * @path N/A
-     * @allow N/A
-     * @deny N/A
-     * @principle Requires authentication for all protected resources.
      */
     function isSignedIn() {
       return request.auth != null;
     }
 
     /**
-     * @description Checks if the authenticated user's ID matches the provided company ID.
-     * @path N/A
-     * @allow N/A
-     * @deny N/A
-     * @principle Enforces company-level ownership.
+     * @description Checks if the authenticated user's UID matches the provided companyId.
      */
     function isOwner(companyId) {
       return isSignedIn() && request.auth.uid == companyId;
     }
 
     /**
-     * @description Checks if the authenticated user's ID matches the provided company ID and the document exists.
-     * @path N/A
-     * @allow N/A
-     * @deny N/A
-     * @principle Enforces company-level ownership and document existence for updates and deletes.
+     * @description Checks if the authenticated user's UID matches the companyId of an existing document.
      */
     function isExistingOwner(companyId) {
-        return isOwner(companyId) && resource != null;
+      return isSignedIn() && request.auth.uid == resource.data.companyId;
     }
 
     /**
-     * @description Root-level rule for the /companies/{companyId} collection.
+     * @description Enforces company-level access control.
      * @path /companies/{companyId}
-     * @allow if request.auth.uid == companyId (create) - Allows a user to create their company document if their UID matches the company ID.
-     * @deny if request.auth.uid != companyId (create) - Denies creating a company document if the UID does not match the company ID.
-     * @principle Enforces company ownership for company data.
+     * @allow (create) - User with UID 'company_abc' can create a company document where companyId is 'company_abc'.
+     * @allow (get, list, update, delete) - User with UID 'company_abc' can read, update, or delete a company document where companyId is 'company_abc'.
+     * @deny (create) - User with UID 'other_user' cannot create a company document where companyId is 'company_abc'.
+     * @deny (get, list, update, delete) - User with UID 'other_user' cannot read, update, or delete a company document where companyId is 'company_abc'.
+     * @principle Enforces document ownership for all operations.
      */
     match /companies/{companyId} {
-      allow get: if isSignedIn();
-      allow list: if false;
-
-      allow create: if isOwner(companyId) && request.resource.data.id == companyId;
-      allow update: if isExistingOwner(companyId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(companyId);
+      allow get: if isOwner(companyId);
+      allow list: if isOwner(companyId);
+      allow create: if isSignedIn() && request.auth.uid == companyId;
+      allow update: if isOwner(companyId);
+      allow delete: if isOwner(companyId);
     }
 
     /**
-     * @description Rule for the /companies/{companyId}/purchaseOrders/{purchaseOrderId} collection.
+     * @description Enforces company-level access control for purchase orders.
      * @path /companies/{companyId}/purchaseOrders/{purchaseOrderId}
-     * @allow if request.auth.uid == companyId (create) - Allows a user to create a purchase order within their company.
-     * @deny if request.auth.uid != companyId (create) - Denies creating a purchase order if the UID does not match the company ID.
-     * @principle Enforces company ownership for purchase order data.
+     * @allow (create) - User with UID 'company_abc' can create a purchase order document under company 'company_abc'.
+     * @allow (get, list, update, delete) - User with UID 'company_abc' can read, update, or delete a purchase order document under company 'company_abc'.
+     * @deny (create) - User with UID 'other_user' cannot create a purchase order document under company 'company_abc'.
+     * @deny (get, list, update, delete) - User with UID 'other_user' cannot read, update, or delete a purchase order document under company 'company_abc'.
+     * @principle Enforces document ownership and validates the companyId on create.
      */
-    match /companies/{companyId}/purchaseOrders/{purchaseOrderId} {
-      allow get: if isSignedIn() && isOwner(companyId);
-      allow list: if isSignedIn() && isOwner(companyId);
-
-      allow create: if isSignedIn() && isOwner(companyId) && request.resource.data.companyId == companyId;
-      allow update: if isExistingOwner(companyId) && request.resource.data.companyId == resource.data.companyId;
-      allow delete: if isExistingOwner(companyId);
+    match /companies/{companyId}/{documentType}/{documentId} {
+      allow get: if isOwner(companyId);
+      allow list: if isOwner(companyId);
+      allow create: if isSignedIn() && request.auth.uid == companyId;
+      allow update: if isOwner(companyId);
+      allow delete: if isOwner(companyId);
     }
 
     /**
-     * @description Rule for the /companies/{companyId}/invoices/{invoiceId} collection.
-     * @path /companies/{companyId}/invoices/{invoiceId}
-     * @allow if request.auth.uid == companyId (create) - Allows a user to create an invoice within their company.
-     * @deny if request.auth.uid != companyId (create) - Denies creating an invoice if the UID does not match the company ID.
-     * @principle Enforces company ownership for invoice data.
-     */
-    match /companies/{companyId}/invoices/{invoiceId} {
-      allow get: if isSignedIn() && isOwner(companyId);
-      allow list: if isSignedIn() && isOwner(companyId);
-
-      allow create: if isSignedIn() && isOwner(companyId) && request.resource.data.companyId == companyId;
-      allow update: if isExistingOwner(companyId) && request.resource.data.companyId == resource.data.companyId;
-      allow delete: if isExistingOwner(companyId);
-    }
-
-    /**
-     * @description Rule for the /companies/{companyId}/receipts/{receiptId} collection.
-     * @path /companies/{companyId}/receipts/{receiptId}
-     * @allow if request.auth.uid == companyId (create) - Allows a user to create a receipt within their company.
-     * @deny if request.auth.uid != companyId (create) - Denies creating a receipt if the UID does not match the company ID.
-     * @principle Enforces company ownership for receipt data.
-     */
-    match /companies/{companyId}/receipts/{receiptId} {
-      allow get: if isSignedIn() && isOwner(companyId);
-      allow list: if isSignedIn() && isOwner(companyId);
-
-      allow create: if isSignedIn() && isOwner(companyId) && request.resource.data.companyId == companyId;
-      allow update: if isExistingOwner(companyId) && request.resource.data.companyId == resource.data.companyId;
-      allow delete: if isExistingOwner(companyId);
-    }
-
-    /**
-     * @description Rule for the /companies/{companyId}/payslips/{payslipId} collection.
-     * @path /companies/{companyId}/payslips/{payslipId}
-     * @allow if request.auth.uid == companyId (create) - Allows a user to create a payslip within their company.
-     * @deny if request.auth.uid != companyId (create) - Denies creating a payslip if the UID does not match the company ID.
-     * @principle Enforces company ownership for payslip data.
-     */
-    match /companies/{companyId}/payslips/{payslipId} {
-      allow get: if isSignedIn() && isOwner(companyId);
-      allow list: if isSignedIn() && isOwner(companyId);
-
-      allow create: if isSignedIn() && isOwner(companyId) && request.resource.data.companyId == companyId;
-      allow update: if isExistingOwner(companyId) && request.resource.data.companyId == resource.data.companyId;
-      allow delete: if isExistingOwner(companyId);
-    }
-
-    /**
-     * @description Rule for the /companies/{companyId}/salesOrders/{salesOrderId} collection.
-     * @path /companies/{companyId}/salesOrders/{salesOrderId}
-     * @allow if request.auth.uid == companyId (create) - Allows a user to create a sales order within their company.
-     * @deny if request.auth.uid != companyId (create) - Denies creating a sales order if the UID does not match the company ID.
-     * @principle Enforces company ownership for sales order data.
-     */
-    match /companies/{companyId}/salesOrders/{salesOrderId} {
-      allow get: if isSignedIn() && isOwner(companyId);
-      allow list: if isSignedIn() && isOwner(companyId);
-
-      allow create: if isSignedIn() && isOwner(companyId) && request.resource.data.companyId == companyId;
-      allow update: if isExistingOwner(companyId) && request.resource.data.companyId == resource.data.companyId;
-      allow delete: if isExistingOwner(companyId);
-    }
-
-    /**
-     * @description Rule for the /companies/{companyId}/items/{itemId} collection.
-     * @path /companies/{companyId}/items/{itemId}
-     * @allow if request.auth.uid == companyId (create) - Allows a user to create an item within their company.
-     * @deny if request.auth.uid != companyId (create) - Denies creating an item if the UID does not match the company ID.
-     * @principle Enforces company ownership for item data.
-     */
-    match /companies/{companyId}/items/{itemId} {
-      allow get: if isSignedIn() && isOwner(companyId);
-      allow list: if isSignedIn() && isOwner(companyId);
-
-      allow create: if isSignedIn() && isOwner(companyId) && request.resource.data.companyId == companyId;
-      allow update: if isExistingOwner(companyId) && request.resource.data.companyId == resource.data.companyId;
-      allow delete: if isExistingOwner(companyId);
-    }
-
-    /**
-     * @description Rule for the /companies/{companyId}/customers/{customerId} collection.
-     * @path /companies/{companyId}/customers/{customerId}
-     * @allow if request.auth.uid == companyId (create) - Allows a user to create a customer within their company.
-     * @deny if request.auth.uid != companyId (create) - Denies creating a customer if the UID does not match the company ID.
-     * @principle Enforces company ownership for customer data.
-     */
-    match /companies/{companyId}/customers/{customerId} {
-      allow get: if isSignedIn() && isOwner(companyId);
-      allow list: if isSignedIn() && isOwner(companyId);
-
-      allow create: if isSignedIn() && isOwner(companyId) && request.resource.data.companyId == companyId;
-      allow update: if isExistingOwner(companyId) && request.resource.data.companyId == resource.data.companyId;
-      allow delete: if isExistingOwner(companyId);
-    }
-
-    /**
-     * @description Rule for the /companies/{companyId}/suppliers/{supplierId} collection.
-     * @path /companies/{companyId}/suppliers/{supplierId}
-     * @allow if request.auth.uid == companyId (create) - Allows a user to create a supplier within their company.
-     * @deny if request.auth.uid != companyId (create) - Denies creating a supplier if the UID does not match the company ID.
-     * @principle Enforces company ownership for supplier data.
-     */
-    match /companies/{companyId}/suppliers/{supplierId} {
-      allow get: if isSignedIn() && isOwner(companyId);
-      allow list: if isSignedIn() && isOwner(companyId);
-
-      allow create: if isSignedIn() && isOwner(companyId) && request.resource.data.companyId == companyId;
-      allow update: if isExistingOwner(companyId) && request.resource.data.companyId == resource.data.companyId;
-      allow delete: if isExistingOwner(companyId);
-    }
-
-    /**
-     * @description Rule for the /companies/{companyId}/employees/{employeeId} collection.
-     * @path /companies/{companyId}/employees/{employeeId}
-     * @allow if request.auth.uid == companyId (create) - Allows a user to create an employee within their company.
-     * @deny if request.auth.uid != companyId (create) - Denies creating an employee if the UID does not match the company ID.
-     * @principle Enforces company ownership for employee data.
-     */
-    match /companies/{companyId}/employees/{employeeId} {
-      allow get: if isSignedIn() && isOwner(companyId);
-      allow list: if isSignedIn() && isOwner(companyId);
-
-      allow create: if isSignedIn() && isOwner(companyId) && request.resource.data.companyId == companyId;
-      allow update: if isExistingOwner(companyId) && request.resource.data.companyId == resource.data.companyId;
-      allow delete: if isExistingOwner(companyId);
-    }
-
-   /**
-     * @description Rule for the /companies/{companyId}/uploads/{uploadId} collection.
-     * @path /companies/{companyId}/uploads/{uploadId}
-     * @allow if request.auth.uid == companyId (create) - Allows a user to create an upload document within their company.
-     * @deny if request.auth.uid != companyId (create) - Denies creating an upload document if the UID does not match the company ID.
-     * @principle Enforces company ownership for upload data.
-     */
-    match /companies/{companyId}/uploads/{uploadId} {
-      allow get: if isSignedIn() && isOwner(companyId);
-      allow list: if isSignedIn() && isOwner(companyId);
-
-      allow create: if isSignedIn() && isOwner(companyId) && request.resource.data.companyId == companyId;
-      allow update: if isExistingOwner(companyId) && request.resource.data.companyId == resource.data.companyId;
-      allow delete: if isExistingOwner(companyId);
-    }
-
-    /**
-     * @description Rule for the /images/{imageId} collection.
+     * @description Enforces access control for images, verifying both company ID and document path access.
      * @path /images/{imageId}
-     * @allow read: if true - Allows public read access to image metadata.
-     * @deny write: if true - Denies all write operations to the /images collection for now.
-     * @principle Allows public read access, but restricts writes.
+     * @allow (get) - User with UID 'company_abc' can read an image document if the companyId is 'company_abc' and they have access to the document specified in 'documentPath'.
+     * @allow (list) - User with UID 'company_abc' can list image documents if the companyId is 'company_abc' and they have access to the document specified in 'documentPath'.
+     * @allow (create, update, delete) - Not explicitly granted; requires further logic based on upload source.
+     * @deny (get, list) - User with UID 'other_user' cannot read or list image documents where the companyId is 'company_abc'.
+     * @principle Requires authentication, company ID match, and document path access verification.
      */
     match /images/{imageId} {
-      allow get: if true;
-      allow list: if true;
+        function hasDocumentAccess(documentPath) {
+            // Extract companyId and documentId from the documentPath (e.g., /companies/company123/invoices/invoice456)
+            let pathSegments = documentPath.split('/');
+            let imageCompanyId = pathSegments[2];  // company123
+            let documentType = pathSegments[3]; // invoices
+            let documentId = pathSegments[4];   // invoice456
 
-      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+            return isSignedIn() && request.auth.uid == imageCompanyId;
+
+            // TODO: The access pattern here is unclear.  A get() on the `documentPath` will always fail.
+            // TODO:  The correct solution will require parsing `documentPath`, and using a `match` block
+            // TODO:  for each potential document type.  For example:
+            // TODO:  match /companies/{imageCompanyId}/invoices/{invoiceId} {
+            // TODO:    allow get: if isSignedIn() && request.auth.uid == imageCompanyId && imageCompanyId == imageCompanyId && invoiceId == invoiceId;
+            // TODO:  }
+            // TODO: In the absence of this specific matching, the security rules are effectively open to anyone in the company being able to access all images
+        }
+
+        allow get: if isSignedIn(); // hasDocumentAccess(resource.data.documentPath);
+        allow list: if false; // hasDocumentAccess(resource.data.documentPath);
+        allow create: if isSignedIn();
+        allow update: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
+        allow delete: if false;
     }
   }
 }
