@@ -33,6 +33,7 @@ import {
   type ConvertToPdfInput,
 } from '@/ai/flows/convert-to-pdf-flow';
 import type { DocumentData } from '@/types';
+import { generateContract, type GenerateContractInput } from '@/ai/flows/generate-contract-flow';
 
 /* -------------------------------------------------------------------------- */
 /*                            Standard Response Type                          */
@@ -99,6 +100,16 @@ const DocumentInputSchema = z.object({
 });
 
 const ConvertToXlsxSchema = z.custom<DocumentData>();
+
+const GenerateContractSchema = z.object({
+    contractType: z.enum(['nda', 'employment', 'sales']),
+    disclosingParty: z.string().optional(),
+    receivingParty: z.string().optional(),
+    effectiveDate: z.string().optional(),
+    term: z.string().optional(),
+    purpose: z.string().optional(),
+});
+
 
 /* -------------------------------------------------------------------------- */
 /*                                Server Actions                              */
@@ -215,5 +226,22 @@ export async function convertToPdfAction(
     return ok(data, traceId);
   } catch (error) {
     return handleActionError('Error during PDF conversion', error, traceId);
+  }
+}
+
+
+/**
+ * Generates a legal contract based on the provided type and data.
+ */
+export async function generateContractAction(
+  input: GenerateContractInput,
+): Promise<ServerActionResponse<Awaited<ReturnType<typeof generateContract>>>> {
+  const traceId = randomUUID();
+  try {
+    GenerateContractSchema.parse(input);
+    const data = await generateContract(input);
+    return ok(data, traceId);
+  } catch (error) {
+    return handleActionError('Failed to generate contract', error, traceId);
   }
 }
