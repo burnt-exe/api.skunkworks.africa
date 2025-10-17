@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { UploadCloud, LoaderCircle, Download, FileText, CheckCircle, FileType } from 'lucide-react';
 import Image from 'next/image';
 import { convertPdfToDocxAction } from '@/app/actions';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,14 +98,19 @@ export default function EasyDocuConvertPage() {
   
   return (
     <div className="space-y-6">
-       <div className="flex items-center gap-4">
-        <Image src="/favicon.ico" alt="EasyFile Logo" width={60} height={60} />
-         <div>
-            <h1 className="text-2xl font-bold tracking-tight" style={{fontFamily: "'Space Grotesk', sans-serif"}}>EasyDocuConvert</h1>
-            <p className="text-muted-foreground" style={{fontFamily: "'Inter', sans-serif"}}>
-                Convert your PDF documents to editable Word (DOCX) files in one click.
-            </p>
-         </div>
+       <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Image src="/favicon.ico" alt="EasyFile Logo" width={60} height={60} />
+          <div>
+              <h1 className="text-2xl font-bold tracking-tight" style={{fontFamily: "'Space Grotesk', sans-serif"}}>EasyDocuConvert</h1>
+              <p className="text-muted-foreground" style={{fontFamily: "'Inter', sans-serif"}}>
+                  Convert your PDF documents to editable Word (DOCX) files in one click.
+              </p>
+          </div>
+        </div>
+        <div className="sm:hidden">
+          <SidebarTrigger />
+        </div>
        </div>
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
