@@ -1,8 +1,8 @@
 export const firebaseConfig = {
-  "projectId": "easydocs-jyi3p",
-  "appId": "1:696496779948:web:4eb9391f815212dd38a509",
-  "apiKey": "AIzaSyCY9vJl86v-2T4bTuGO2vhz2z2tufYsJWU",
-  "authDomain": "easydocs-jyi3p.firebaseapp.com",
-  "measurementId": "",
-  "messagingSenderId": "696496779948"
+  "projectId": "easyfilev20-27833257-6347a",
+  "appId": "1:837078045227:web:e21ded86cacd56c129106e",
+  "apiKey": "AIzaSyD6O8JYEVaskylw0Tax5CWhdAUQ_n0mu3Y",
+  "authDomain": "easyfilev20-27833257-6347a.firebaseapp.com",
+  "measurementId": "G-YHEK5DM436",
+  "messagingSenderId": "837078045227"
 };

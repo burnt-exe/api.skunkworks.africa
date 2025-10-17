@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "PurchaseOrder": {
@@ -11,22 +10,27 @@
           "type": "string",
           "description": "Unique identifier for the purchase order."
         },
-        "supplierId": {
-          "type": "string",
-          "description": "Reference to the Supplier. (Relationship: Supplier 1:N PurchaseOrder)"
-        },
         "companyId": {
           "type": "string",
-          "description": "Reference to the Company issuing the purchase order. (Relationship: Company 1:N PurchaseOrder)"
+          "description": "Reference to the Company that created the purchase order. (Relationship: Company 1:N PurchaseOrder)"
+        },
+        "supplierId": {
+          "type": "string",
+          "description": "Reference to the Supplier the purchase order is addressed to. (Relationship: Supplier 1:N PurchaseOrder)"
         },
         "orderDate": {
           "type": "string",
           "description": "Date the purchase order was created.",
           "format": "date-time"
         },
+        "dueDate": {
+          "type": "string",
+          "description": "Date the purchase order is expected to be fulfilled.",
+          "format": "date-time"
+        },
         "items": {
           "type": "array",
-          "description": "List of items in the purchase order.  Each item should include details like description, quantity, and price.",
+          "description": "List of items included in the purchase order.",
           "items": {
             "type": "string"
           }
@@ -37,13 +41,17 @@
         },
         "status": {
           "type": "string",
-          "description": "Status of the purchase order (e.g., pending, approved, completed)."
+          "description": "Current status of the purchase order (e.g., pending, approved, completed)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any additional notes or comments related to the purchase order."
         }
       },
       "required": [
         "id",
-        "supplierId",
         "companyId",
+        "supplierId",
         "orderDate",
         "items",
         "totalAmount",
@@ -56,103 +64,57 @@
       "type": "object",
       "description": "Represents an invoice document.",
       "properties": {
-        "title": {
-          "type": "string"
-        },
-        "logoUrl": {
-          "type": "string"
-        },
-        "from": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "address": {
-              "type": "string"
-            }
-          }
-        },
-        "to": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "address": {
-              "type": "string"
-            }
-          }
-        },
-        "details": {
-          "type": "object",
-          "properties": {
-            "label": {
-              "type": "string"
-            },
-            "value": {
-              "type": "string"
-            }
-          }
-        },
-        "date": {
+        "id": {
           "type": "string",
-          "format": "date"
+          "description": "Unique identifier for the invoice."
+        },
+        "companyId": {
+          "type": "string",
+          "description": "Reference to the Company that issued the invoice. (Relationship: Company 1:N Invoice)"
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Reference to the Customer the invoice is for. (Relationship: Customer 1:N Invoice)"
+        },
+        "invoiceDate": {
+          "type": "string",
+          "description": "Date the invoice was issued.",
+          "format": "date-time"
         },
         "dueDate": {
           "type": "string",
-          "format": "date"
+          "description": "Date the invoice is due.",
+          "format": "date-time"
         },
-        "lineItems": {
+        "items": {
           "type": "array",
+          "description": "List of items included in the invoice.",
           "items": {
-            "type": "object",
-            "properties": {
-              "description": {
-                "type": "string"
-              },
-              "quantity": {
-                "type": "number"
-              },
-              "price": {
-                "type": "number"
-              }
-            }
-          }
-        },
-        "notes": {
-          "type": "string"
-        },
-        "vatRate": {
-          "type": "number"
-        },
-        "paymentDetails": {
-          "type": "object",
-          "properties": {
-            "bankName": {
-              "type": "string"
-            },
-            "accountName": {
-              "type": "string"
-            },
-            "accountNumber": {
-              "type": "string"
-            },
-            "sortCode": {
-              "type": "string"
-            }
+            "type": "string"
           }
         },
         "totalAmount": {
-          "type": "number"
+          "type": "number",
+          "description": "Total amount of the invoice."
         },
-        "status": {
-          "type": "string"
+        "paymentStatus": {
+          "type": "string",
+          "description": "Current payment status of the invoice (e.g., pending, paid, overdue)."
         },
-        "companyId": {
-          "type": "string"
+        "notes": {
+          "type": "string",
+          "description": "Any additional notes or comments related to the invoice."
         }
-      }
+      },
+      "required": [
+        "id",
+        "companyId",
+        "customerId",
+        "invoiceDate",
+        "items",
+        "totalAmount",
+        "paymentStatus"
+      ]
     },
     "Receipt": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -164,13 +126,13 @@
           "type": "string",
           "description": "Unique identifier for the receipt."
         },
-        "customerId": {
-          "type": "string",
-          "description": "Reference to the Customer. (Relationship: Customer 1:N Receipt)"
-        },
         "companyId": {
           "type": "string",
-          "description": "Reference to the Company issuing the receipt. (Relationship: Company 1:N Receipt)"
+          "description": "Reference to the Company that issued the receipt. (Relationship: Company 1:N Receipt)"
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Reference to the Customer who made the payment. (Relationship: Customer 1:N Receipt)"
         },
         "paymentDate": {
           "type": "string",
@@ -179,7 +141,7 @@
         },
         "paymentMethod": {
           "type": "string",
-          "description": "Method of payment (e.g., cash, credit card)."
+          "description": "Method of payment (e.g., cash, credit card, bank transfer)."
         },
         "amount": {
           "type": "number",
@@ -187,13 +149,17 @@
         },
         "invoiceId": {
           "type": "string",
-          "description": "Reference to the Invoice. (Relationship: Invoice 1:N Receipt)"
+          "description": "Reference to the Invoice the receipt is for. (Relationship: Invoice 1:N Receipt)"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any additional notes or comments related to the receipt."
         }
       },
       "required": [
         "id",
-        "customerId",
         "companyId",
+        "customerId",
         "paymentDate",
         "paymentMethod",
         "amount"
@@ -209,13 +175,13 @@
           "type": "string",
           "description": "Unique identifier for the payslip."
         },
-        "employeeId": {
-          "type": "string",
-          "description": "Reference to the Employee. (Relationship: Employee 1:N Payslip)"
-        },
         "companyId": {
           "type": "string",
-          "description": "Reference to the Company issuing the payslip. (Relationship: Company 1:N Payslip)"
+          "description": "Reference to the Company that issued the payslip. (Relationship: Company 1:N Payslip)"
+        },
+        "employeeId": {
+          "type": "string",
+          "description": "Reference to the Employee the payslip is for. (Relationship: Employee 1:N Payslip)"
         },
         "payPeriodStartDate": {
           "type": "string",
@@ -246,16 +212,19 @@
           "type": "string",
           "description": "Date the payment was made.",
           "format": "date-time"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any additional notes or comments related to the payslip."
         }
       },
       "required": [
         "id",
-        "employeeId",
         "companyId",
+        "employeeId",
         "payPeriodStartDate",
         "payPeriodEndDate",
         "grossPay",
-        "deductions",
         "netPay",
         "paymentDate"
       ]
@@ -270,22 +239,27 @@
           "type": "string",
           "description": "Unique identifier for the sales order."
         },
-        "customerId": {
-          "type": "string",
-          "description": "Reference to the Customer. (Relationship: Customer 1:N SalesOrder)"
-        },
         "companyId": {
           "type": "string",
-          "description": "Reference to the Company issuing the sales order. (Relationship: Company 1:N SalesOrder)"
+          "description": "Reference to the Company that created the sales order. (Relationship: Company 1:N SalesOrder)"
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Reference to the Customer who placed the order. (Relationship: Customer 1:N SalesOrder)"
         },
         "orderDate": {
           "type": "string",
           "description": "Date the sales order was created.",
           "format": "date-time"
         },
+        "shipDate": {
+          "type": "string",
+          "description": "Date the order is expected to be shipped.",
+          "format": "date-time"
+        },
         "items": {
           "type": "array",
-          "description": "List of items in the sales order. Each item should include details like description, quantity, and price.",
+          "description": "List of items included in the sales order.",
           "items": {
             "type": "string"
           }
@@ -296,13 +270,17 @@
         },
         "status": {
           "type": "string",
-          "description": "Status of the sales order (e.g., pending, confirmed, shipped)."
+          "description": "Current status of the sales order (e.g., pending, processing, shipped, completed)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any additional notes or comments related to the sales order."
         }
       },
       "required": [
         "id",
-        "customerId",
         "companyId",
+        "customerId",
         "orderDate",
         "items",
         "totalAmount",
@@ -313,7 +291,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Company",
       "type": "object",
-      "description": "Represents the company information.",
+      "description": "Represents a company that uses the application.",
       "properties": {
         "id": {
           "type": "string",
@@ -323,20 +301,23 @@
           "type": "string",
           "description": "Name of the company."
         },
+        "vatNumber": {
+          "type": "string",
+          "description": "VAT number of the company."
+        },
         "address": {
           "type": "string",
           "description": "Address of the company."
         },
-        "vatNumber": {
+        "contactEmail": {
           "type": "string",
-          "description": "VAT number of the company."
+          "description": "Contact email address of the company.",
+          "format": "email"
         }
       },
       "required": [
         "id",
-        "name",
-        "address",
-        "vatNumber"
+        "name"
       ]
     },
     "Customer": {
@@ -349,25 +330,32 @@
           "type": "string",
           "description": "Unique identifier for the customer."
         },
+        "companyId": {
+          "type": "string",
+          "description": "Reference to the Company the customer belongs to. (Relationship: Company 1:N Customer)"
+        },
         "name": {
           "type": "string",
           "description": "Name of the customer."
-        },
-        "address": {
-          "type": "string",
-          "description": "Address of the customer."
         },
         "email": {
           "type": "string",
           "description": "Email address of the customer.",
           "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the customer."
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the customer."
         }
       },
       "required": [
         "id",
-        "name",
-        "address",
-        "email"
+        "companyId",
+        "name"
       ]
     },
     "Supplier": {
@@ -380,24 +368,32 @@
           "type": "string",
           "description": "Unique identifier for the supplier."
         },
+        "companyId": {
+          "type": "string",
+          "description": "Reference to the Company the supplier is associated with. (Relationship: Company 1:N Supplier)"
+        },
         "name": {
           "type": "string",
           "description": "Name of the supplier."
         },
+        "email": {
+          "type": "string",
+          "description": "Email address of the supplier.",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the supplier."
+        },
         "address": {
           "type": "string",
           "description": "Address of the supplier."
-        },
-        "contactPerson": {
-          "type": "string",
-          "description": "Contact person at the supplier's company."
         }
       },
       "required": [
         "id",
-        "name",
-        "address",
-        "contactPerson"
+        "companyId",
+        "name"
       ]
     },
     "Employee": {
@@ -410,25 +406,74 @@
           "type": "string",
           "description": "Unique identifier for the employee."
         },
+        "companyId": {
+          "type": "string",
+          "description": "Reference to the Company the employee works for. (Relationship: Company 1:N Employee)"
+        },
         "name": {
           "type": "string",
           "description": "Name of the employee."
-        },
-        "jobTitle": {
-          "type": "string",
-          "description": "Job title of the employee."
         },
         "email": {
           "type": "string",
           "description": "Email address of the employee.",
           "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the employee."
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the employee."
+        },
+        "jobTitle": {
+          "type": "string",
+          "description": "Job title of the employee."
         }
       },
       "required": [
         "id",
+        "companyId",
+        "name"
+      ]
+    },
+    "Item": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Item",
+      "type": "object",
+      "description": "Represents an item that can be sold or purchased.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the item."
+        },
+        "companyId": {
+          "type": "string",
+          "description": "Reference to the Company that owns the item. (Relationship: Company 1:N Item)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the item."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the item."
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "Unit price of the item."
+        },
+        "vatRate": {
+          "type": "number",
+          "description": "VAT rate applicable to the item."
+        }
+      },
+      "required": [
+        "id",
+        "companyId",
         "name",
-        "jobTitle",
-        "email"
+        "unitPrice"
       ]
     }
   },
@@ -447,7 +492,7 @@
           "schema": {
             "$ref": "#/backend/entities/Company"
           },
-          "description": "Stores company information.  The {companyId} is used to scope all other data.",
+          "description": "Stores company information. Top-level collection for multi-tenancy.",
           "params": [
             {
               "name": "companyId",
@@ -463,7 +508,7 @@
           "schema": {
             "$ref": "#/backend/entities/PurchaseOrder"
           },
-          "description": "Stores purchase order documents for a specific company.",
+          "description": "Stores purchase order documents for a specific company. Includes denormalized 'companyId' for authorization independence.",
           "params": [
             {
               "name": "companyId",
@@ -483,7 +528,7 @@
           "schema": {
             "$ref": "#/backend/entities/Invoice"
           },
-          "description": "Stores invoice documents for a specific company.",
+          "description": "Stores invoice documents for a specific company. Includes denormalized 'companyId' for authorization independence.",
           "params": [
             {
               "name": "companyId",
@@ -503,7 +548,7 @@
           "schema": {
             "$ref": "#/backend/entities/Receipt"
           },
-          "description": "Stores receipt documents for a specific company.",
+          "description": "Stores receipt documents for a specific company. Includes denormalized 'companyId' for authorization independence.",
           "params": [
             {
               "name": "companyId",
@@ -523,7 +568,7 @@
           "schema": {
             "$ref": "#/backend/entities/Payslip"
           },
-          "description": "Stores payslip documents for a specific company.",
+          "description": "Stores payslip documents for a specific company. Includes denormalized 'companyId' for authorization independence.",
           "params": [
             {
               "name": "companyId",
@@ -543,7 +588,7 @@
           "schema": {
             "$ref": "#/backend/entities/SalesOrder"
           },
-          "description": "Stores sales order documents for a specific company.",
+          "description": "Stores sales order documents for a specific company. Includes denormalized 'companyId' for authorization independence.",
           "params": [
             {
               "name": "companyId",
@@ -555,8 +600,124 @@
             }
           ]
         }
+      },
+      {
+        "path": "/companies/{companyId}/items/{itemId}",
+        "definition": {
+          "entityName": "Item",
+          "schema": {
+            "$ref": "#/backend/entities/Item"
+          },
+          "description": "Stores items for a specific company. Includes denormalized 'companyId' for authorization independence.",
+          "params": [
+            {
+              "name": "companyId",
+              "description": "Unique identifier for the company."
+            },
+            {
+              "name": "itemId",
+              "description": "Unique identifier for the item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/companies/{companyId}/customers/{customerId}",
+        "definition": {
+          "entityName": "Customer",
+          "schema": {
+            "$ref": "#/backend/entities/Customer"
+          },
+          "description": "Stores customers for a specific company. Includes denormalized 'companyId' for authorization independence.",
+          "params": [
+            {
+              "name": "companyId",
+              "description": "Unique identifier for the company."
+            },
+            {
+              "name": "customerId",
+              "description": "Unique identifier for the customer."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/companies/{companyId}/suppliers/{supplierId}",
+        "definition": {
+          "entityName": "Supplier",
+          "schema": {
+            "$ref": "#/backend/entities/Supplier"
+          },
+          "description": "Stores suppliers for a specific company. Includes denormalized 'companyId' for authorization independence.",
+          "params": [
+            {
+              "name": "companyId",
+              "description": "Unique identifier for the company."
+            },
+            {
+              "name": "supplierId",
+              "description": "Unique identifier for the supplier."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/companies/{companyId}/employees/{employeeId}",
+        "definition": {
+          "entityName": "Employee",
+          "schema": {
+            "$ref": "#/backend/entities/Employee"
+          },
+          "description": "Stores employees for a specific company. Includes denormalized 'companyId' for authorization independence.",
+          "params": [
+            {
+              "name": "companyId",
+              "description": "Unique identifier for the company."
+            },
+            {
+              "name": "employeeId",
+              "description": "Unique identifier for the employee."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/companies/{companyId}/uploads/{uploadId}",
+        "definition": {
+          "entityName": "Upload",
+          "schema": {
+            "$ref": "#/backend/entities/Upload"
+          },
+          "description": "Stores metadata about uploaded files for a specific company. This allows for tracking uploads and triggering processing. Includes denormalized 'companyId' for authorization independence.",
+          "params": [
+            {
+              "name": "companyId",
+              "description": "Unique identifier for the company."
+            },
+            {
+              "name": "uploadId",
+              "description": "Unique identifier for the upload."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/images/{imageId}",
+        "definition": {
+          "entityName": "Image",
+          "schema": {
+            "$ref": "#/backend/entities/Image"
+          },
+          "description": "Stores metadata about extracted images. Includes 'companyId' and 'documentPath' (e.g., /companies/{companyId}/invoices/{invoiceId}) for authorization. The security rules will check if the user has access to the document specified in 'documentPath'.",
+          "params": [
+            {
+              "name": "imageId",
+              "description": "Unique identifier for the extracted image."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to manage documents related to a company's operations, including purchase orders, invoices, receipts, payslips, and sales orders. The structure prioritizes authorization independence and simplifies security rules by denormalizing authorization data. Each document type is stored in a separate collection nested under the `companies/{companyId}` path, ensuring data segregation and a consistent security posture within each collection. This design allows for granular access control at the company level and avoids complex hierarchical authorization dependencies. The structure enables secure list operations (QAPs) through path-based ownership and eliminates the need for filtering in rules.\n\nAuthorization Independence is achieved by storing all documents related to a company under the `companies/{companyId}` path. This eliminates the need to `get()` parent document data to determine access rights for subcollections. For example, to secure access to purchase orders, the `companyId` is included directly within each purchase order document, allowing security rules to directly verify if the user has access to the specific company without needing to retrieve the company document itself.\n\nThe structure also supports QAPs by ensuring that each collection has a homogeneous security posture. For example, all documents in the `/companies/{companyId}/purchaseOrders` collection have a single security posture where a user must have access to the company to be able to create, read, update, or delete any document in the collection."
+    "reasoning": "The Firestore data structure is designed to support EasyDocs' core features (PO, Invoice, Receipt, Payslip, SO generation) while ensuring scalability, security, and debuggability, especially concerning the PDF upload and image extraction workflow. The structure prioritizes authorization independence and facilitates secure list operations (QAPs) by denormalizing authorization data. Each company's data is isolated under its own top-level collection to support multi-tenancy.\n\n**Key Design Decisions:**\n\n*   **Company-Based Segregation:** All documents are stored under a `/companies/{companyId}` path. This enforces multi-tenancy at the top level and simplifies security rules by scoping access to a specific company.\n*   **Document Type Segregation:**  Each document type (PurchaseOrder, Invoice, etc.) has its own subcollection under the company. This structural segregation allows specific security rules tailored to each document type.\n*   **Image Extraction Context:** A top-level `/images` collection stores information about extracted images across all companies.  Each image document contains the `companyId` and a reference (`documentPath`) back to the originating document (e.g., `/companies/{companyId}/invoices/{invoiceId}`).  This approach allows for global image search and management while still maintaining context.  The `documentPath` is crucial for authorization, ensuring that users can only access images originating from documents they have permission to view.\n*   **PDF Upload and Processing:** The `/companies/{companyId}/uploads/{uploadId}` collection stores metadata about uploaded PDF files. A Firebase Function triggered by file uploads to Firebase Storage can then process the PDF, extract images, and populate the `/images` collection and update the originating document with links to the extracted images.\n*   **Authorization Independence:**  The `companyId` is denormalized into every document. This eliminates the need for `get()` calls in security rules to check company ownership, enabling atomic operations.\n\n**QAPs (Rules are not Filters):**\n\nThe design supports secure `list` operations:\n\n*   Listing documents within a company is secured by checking `request.auth.uid` against the `companyId`.  Only authenticated users are allowed, and access is limited to their respective company.\n*   The `/images` collection can be queried securely.  When listing images, security rules ensure that the user's `request.auth.uid` matches the `companyId` stored in the image document, and they have access to the document referenced by `documentPath`.\n\nThis design pattern promotes simple, robust, and easily debuggable security rules, addressing the core design principles."
   }
 }

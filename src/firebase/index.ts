@@ -1,61 +1,50 @@
-// /src/firebase/index.ts
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAnalytics, isSupported } from "firebase/analytics";
-import {
-  getFirestore,
-  initializeFirestore,
-  persistentLocalCache,
-  persistentMultipleTabManager,
-} from "firebase/firestore";
-import { getAuth, browserLocalPersistence, setPersistence } from "firebase/auth";
-import { getStorage } from "firebase/storage";
+'use client';
 
-export { FirebaseClientProvider } from './client-provider';
+import { firebaseConfig } from '@/firebase/config';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore'
+
+// IMPORTANT: DO NOT MODIFY THIS FUNCTION
+export function initializeFirebase() {
+  if (!getApps().length) {
+    // Important! initializeApp() is called without any arguments because Firebase App Hosting
+    // integrates with the initializeApp() function to provide the environment variables needed to
+    // populate the FirebaseOptions in production. It is critical that we attempt to call initializeApp()
+    // without arguments.
+    let firebaseApp;
+    try {
+      // Attempt to initialize via Firebase App Hosting environment variables
+      firebaseApp = initializeApp();
+    } catch (e) {
+      // Only warn in production because it's normal to use the firebaseConfig to initialize
+      // during development
+      if (process.env.NODE_ENV === "production") {
+        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
+      }
+      firebaseApp = initializeApp(firebaseConfig);
+    }
+
+    return getSdks(firebaseApp);
+  }
+
+  // If already initialized, return the SDKs with the already initialized App
+  return getSdks(getApp());
+}
+
+export function getSdks(firebaseApp: FirebaseApp) {
+  return {
+    firebaseApp,
+    auth: getAuth(firebaseApp),
+    firestore: getFirestore(firebaseApp)
+  };
+}
+
 export * from './provider';
+export * from './client-provider';
 export * from './firestore/use-collection';
 export * from './firestore/use-doc';
-export * from './non-blocking-login';
 export * from './non-blocking-updates';
-export * from './init';
-
-
-// --- Firebase configuration (public keys) ---
-const firebaseConfig = {
-  apiKey: "AIzaSyD6O8JYEVaskylw0Tax5CWhdAUQ_n0mu3Y",
-  authDomain: "easyfilev20-27833257-6347a.firebaseapp.com",
-  projectId: "easyfilev20-27833257-6347a",
-  storageBucket: "easyfilev20-27833257-6347a.firebasestorage.app",
-  messagingSenderId: "837078045227",
-  appId: "1:837078045227:web:e21ded86cacd56c129106e",
-  measurementId: "G-YHEK5DM436",
-};
-
-// --- Prevent double initialization during hot reloads ---
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-// --- Firestore (with local caching + multi-tab sync) ---
-const db =
-  getApps().length === 0
-    ? initializeFirestore(app, {
-        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-      })
-    : getFirestore(app);
-
-// --- Auth (with browser persistence) ---
-const auth = getAuth(app);
-if (typeof window !== "undefined") {
-  setPersistence(auth, browserLocalPersistence);
-}
-
-// --- Storage for file uploads ---
-const storage = getStorage(app);
-
-// --- Analytics only in client environment ---
-let analytics: ReturnType<typeof getAnalytics> | null = null;
-if (typeof window !== "undefined") {
-  isSupported().then((supported) => {
-    if (supported) analytics = getAnalytics(app);
-  });
-}
-
-export { app, db, auth, storage, analytics };
+export * from './non-blocking-login';
+export * from './errors';
+export * from './error-emitter';
