@@ -12,6 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
 import type { DocumentData } from '@/types';
+import * as XLSX from 'xlsx';
 
 // Define a Zod schema for DocumentData for runtime validation if needed.
 // This is a simplified version. A complete one would be more complex.
@@ -35,13 +36,48 @@ const convertToXlsxFlow = ai.defineFlow(
     inputSchema: ConvertToXlsxInputSchema,
     outputSchema: ConvertToXlsxOutputSchema,
   },
-  async (input) => {
-    // This is a placeholder implementation.
-    // A real implementation would use a library like 'xlsx' to build a file from the input data.
-    // For now, we will return a fake, minimal XLSX file.
-    
-    const fakeXlsxContent = "UEsDBBQAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAGxQSwECFAAUAAAACAAAAAAAAAAAAAAAAAAAAAAAAQAAAAIAAAAAAAA="; // A very minimal, empty file in base64
-    const xlsxDataUri = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${fakeXlsxContent}`;
+  async (data) => {
+    // 1. Create a new workbook and a worksheet
+    const wb = XLSX.utils.book_new();
+    const ws_name = data.title.replace(/\s+/g, '_') || "Sheet1";
+
+    // 2. Prepare data for the worksheet
+    const headers = ["Description", "Quantity", "Price", "Total"];
+    const lineItemsData = data.lineItems.map(item => [
+        item.description,
+        item.quantity,
+        item.price,
+        item.quantity * item.price
+    ]);
+
+    const subtotal = data.lineItems.reduce((acc, item) => acc + item.quantity * item.price, 0);
+    const vatAmount = subtotal * ((data.vatRate || 0) / 100);
+    const total = subtotal + vatAmount;
+
+    // 3. Construct the worksheet data array
+    const ws_data = [
+        headers,
+        ...lineItemsData,
+        [], // Empty row for spacing
+        ["", "", "Subtotal", subtotal],
+    ];
+
+    if (data.vatRate) {
+        ws_data.push(["", "", `VAT (${data.vatRate}%)`, vatAmount]);
+    }
+
+    ws_data.push(["", "", "Total", total]);
+
+    // 4. Create the worksheet and append it to the workbook
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    XLSX.utils.book_append_sheet(wb, ws, ws_name);
+
+    // 5. Generate the XLSX file buffer
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
+
+    // 6. Convert to base64 data URI
+    const base64String = (wbout as Buffer).toString('base64');
+    const xlsxDataUri = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64String}`;
 
     return { xlsxDataUri };
   }
