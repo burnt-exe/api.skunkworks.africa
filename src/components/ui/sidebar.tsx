@@ -12,12 +12,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tool
 /* -------------------------------------------------------------------------- */
 /*                                   Context                                  */
 /* -------------------------------------------------------------------------- */
+type SidebarState = 'full' | 'compact' | 'hidden';
+
 type SidebarContextType = {
-  isOpen: boolean;
+  sidebarState: SidebarState;
   isMobile: boolean | undefined;
   isIconMode: boolean;
   toggleSidebar: () => void;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setSidebarState: React.Dispatch<React.SetStateAction<SidebarState>>;
 };
 
 const SidebarContext = React.createContext<SidebarContextType | undefined>(
@@ -36,25 +38,33 @@ export const useSidebar = () => {
 /*                                  Provider                                  */
 /* -------------------------------------------------------------------------- */
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [isOpen, setIsOpen] = React.useState(true);
+  const [sidebarState, setSidebarState] = React.useState<SidebarState>('full');
   const isMobile = useIsMobile();
-  const isIconMode = isMobile === false && isOpen === false;
+  const isIconMode = sidebarState === 'compact';
 
   React.useEffect(() => {
     if (isMobile) {
-      setIsOpen(false);
+      setSidebarState('hidden');
     } else {
-      setIsOpen(true);
+      setSidebarState('full');
     }
   }, [isMobile]);
 
   const toggleSidebar = () => {
-    setIsOpen((prev) => !prev);
+    setSidebarState((prev) => {
+        if (isMobile) {
+            return prev === 'hidden' ? 'full' : 'hidden';
+        }
+        // Desktop cycle: full -> compact -> hidden -> full
+        if (prev === 'full') return 'compact';
+        if (prev === 'compact') return 'hidden';
+        return 'full';
+    });
   };
 
   return (
     <SidebarContext.Provider
-      value={{ isOpen, isMobile, isIconMode, toggleSidebar, setIsOpen }}
+      value={{ sidebarState, isMobile, isIconMode, toggleSidebar, setSidebarState }}
     >
       <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
     </SidebarContext.Provider>
@@ -74,17 +84,18 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
 /*                               Mobile Sidebar                               */
 /* -------------------------------------------------------------------------- */
 function MobileSidebar({ children }: { children: React.ReactNode }) {
-  const { isOpen, setIsOpen } = useSidebar();
+  const { sidebarState, setSidebarState } = useSidebar();
+  const isOpen = sidebarState === 'full';
 
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setIsOpen(false);
+        setSidebarState('hidden');
       }
     };
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [setIsOpen]);
+  }, [setSidebarState]);
 
   return (
     <AnimatePresence>
@@ -96,7 +107,7 @@ function MobileSidebar({ children }: { children: React.ReactNode }) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          <div className="absolute inset-0 bg-black/50" onClick={() => setIsOpen(false)} />
+          <div className="absolute inset-0 bg-black/50" onClick={() => setSidebarState('hidden')} />
           <motion.div
             className="absolute left-0 top-0 h-full w-[85%] max-w-xs bg-background"
             initial={{ x: '-100%' }}
@@ -116,14 +127,21 @@ function MobileSidebar({ children }: { children: React.ReactNode }) {
 /*                              Desktop Sidebar                               */
 /* -------------------------------------------------------------------------- */
 function DesktopSidebar({ children }: { children: React.ReactNode }) {
-  const { isOpen } = useSidebar();
+  const { sidebarState } = useSidebar();
+  
+  const sidebarWidth = {
+      full: 256,
+      compact: 64,
+      hidden: 0
+  }
+
   return (
     <motion.aside
       className={cn('fixed left-0 top-0 h-screen overflow-y-auto overflow-x-hidden group z-30')}
       initial={false}
-      animate={{ width: isOpen ? 256 : 64 }}
+      animate={{ width: sidebarWidth[sidebarState] }}
       transition={{ ease: 'easeInOut', duration: 0.3 }}
-      data-collapsible={isOpen ? 'full' : 'icon'}
+      data-collapsible={sidebarState}
     >
       {children}
     </motion.aside>
@@ -134,7 +152,9 @@ function DesktopSidebar({ children }: { children: React.ReactNode }) {
 /*                               Sidebar Trigger                              */
 /* -------------------------------------------------------------------------- */
 export function SidebarTrigger() {
-  const { toggleSidebar, isOpen } = useSidebar();
+  const { toggleSidebar, sidebarState, isMobile } = useSidebar();
+  const isOpen = sidebarState === 'full';
+
   return (
     <Button
       variant="ghost"
@@ -145,13 +165,13 @@ export function SidebarTrigger() {
     >
       <AnimatePresence initial={false} mode="wait">
         <motion.div
-          key={isOpen ? 'open' : 'closed'}
+          key={isOpen && isMobile ? 'open' : 'closed'}
           initial={{ rotate: -90, opacity: 0, scale: 0.8 }}
           animate={{ rotate: 0, opacity: 1, scale: 1 }}
           exit={{ rotate: 90, opacity: 0, scale: 0.8 }}
           transition={{ duration: 0.2 }}
         >
-          {isOpen ? <X /> : <Menu />}
+          {isOpen && isMobile ? <X /> : <Menu />}
         </motion.div>
       </AnimatePresence>
     </Button>
@@ -168,7 +188,7 @@ export const SidebarHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'flex h-16 shrink-0 items-center justify-between px-4',
+      'flex h-16 shrink-0 items-center justify-between',
       className
     )}
     {...props}
@@ -190,6 +210,7 @@ SidebarMenu.displayName = 'SidebarMenu';
 
 export function SidebarMenuItem({ children }: { children: React.ReactNode }) {
   const { isIconMode } = useSidebar();
+  // This logic seems reversed, but it correctly wraps the button in a tooltip when in icon mode.
   if (isIconMode) {
     return <>{children}</>;
   }

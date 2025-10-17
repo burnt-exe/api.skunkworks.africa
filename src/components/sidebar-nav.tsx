@@ -10,6 +10,8 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  useSidebar,
+  SidebarTrigger,
 } from './ui/sidebar';
 import {
   FileText,
@@ -23,6 +25,7 @@ import {
   Calculator,
   FileCog,
   LogOut,
+  ChevronLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCalculator } from '@/context/CalculatorProvider';
@@ -39,8 +42,9 @@ export function SidebarNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { toggleCalculator } = useCalculator();
-  const { user, isUserLoading } = useUser();
+  const { user } = useUser();
   const auth = useAuth();
+  const { setSidebarState } = useSidebar();
   const logoUrl = 'https://raw.githubusercontent.com/burnt-exe/easyfile/1fd577db3831ef09cee1b97adcf33bd0e817e24c/logo.svg';
 
   const handleSignOut = async () => {
@@ -70,28 +74,36 @@ export function SidebarNav() {
       aria-label="Primary Sidebar"
     >
       {/* Header */}
-      <SidebarHeader className="p-4 border-b border-white/10">
-        <Link
-          href="/"
-          className="flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D8EFF] rounded-md"
-        >
-          <div className="relative w-9 h-9 bg-white rounded-md p-1">
-            <Image
-              src={logoUrl}
-              alt="EasyFile Logo"
-              width={36}
-              height={36}
-              className="object-contain drop-shadow-[0_0_6px_rgba(56,152,255,0.6)] group-hover:scale-110 transition-transform duration-300 ease-in-out"
-            />
-          </div>
-          <h1 className="text-lg font-semibold tracking-tight bg-gradient-to-r from-[#1D8EFF] to-[#00B4FF] bg-clip-text text-transparent group-data-[collapsible=icon]:hidden">
-            EasyFile
-          </h1>
-        </Link>
+      <SidebarHeader className="p-4 border-b border-white/10 group-data-[collapsible=compact]:justify-center group-data-[collapsible=hidden]:hidden">
+         <div className="flex items-center gap-3">
+            <Link
+            href="/"
+            className="flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D8EFF] rounded-md"
+            >
+            <div className="relative w-9 h-9 bg-white rounded-md p-1">
+                <Image
+                src={logoUrl}
+                alt="EasyFile Logo"
+                width={36}
+                height={36}
+                className="object-contain drop-shadow-[0_0_6px_rgba(56,152,255,0.6)] group-hover:scale-110 transition-transform duration-300 ease-in-out"
+                />
+            </div>
+            <h1 className="text-lg font-semibold tracking-tight bg-gradient-to-r from-[#1D8EFF] to-[#00B4FF] bg-clip-text text-transparent group-data-[collapsible=compact]:hidden">
+                EasyFile
+            </h1>
+            </Link>
+        </div>
+
+        <div className="group-data-[collapsible=compact]:hidden">
+            <Button variant="ghost" size="icon" onClick={() => setSidebarState('compact')} className="text-white/70 hover:text-white hover:bg-white/10">
+                <ChevronLeft className="h-5 w-5" />
+            </Button>
+        </div>
       </SidebarHeader>
 
       {/* Navigation Items */}
-      <SidebarMenu className="flex-grow p-2 space-y-1">
+      <SidebarMenu className="group-data-[collapsible=hidden]:hidden">
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href;
           return (
@@ -119,7 +131,7 @@ export function SidebarNav() {
                       isActive && 'scale-110 text-[#1D8EFF]'
                     )}
                   />
-                  <span className="group-data-[collapsible=icon]:hidden">
+                  <span className="group-data-[collapsible=compact]:hidden">
                     {label}
                   </span>
                 </Link>
@@ -140,7 +152,7 @@ export function SidebarNav() {
                 aria-hidden="true"
                 className='w-5 h-5 shrink-0 transition-transform duration-200'
               />
-              <span className="group-data-[collapsible=icon]:hidden">
+              <span className="group-data-[collapsible=compact]:hidden">
                 Calculator
               </span>
             </SidebarMenuButton>
@@ -149,7 +161,7 @@ export function SidebarNav() {
 
       {/* User Footer */}
       <footer
-        className="p-2 border-t border-white/10 group-data-[collapsible=icon]:p-2"
+        className="p-2 border-t border-white/10 group-data-[collapsible=compact]:p-2 group-data-[collapsible=hidden]:hidden"
         aria-label="User account management"
       >
         <DropdownMenu>
@@ -160,7 +172,7 @@ export function SidebarNav() {
                             <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || 'User'}/>
                             <AvatarFallback>{user?.email?.[0].toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <div className="text-left group-data-[collapsible=icon]:hidden">
+                        <div className="text-left group-data-[collapsible=compact]:hidden">
                             <p className="text-sm font-medium text-white truncate">{user?.displayName || user?.email}</p>
                             <p className="text-xs text-white/50">View Account</p>
                         </div>

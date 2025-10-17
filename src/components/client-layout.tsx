@@ -13,14 +13,20 @@ import { FirebaseClientProvider } from "@/firebase";
 import ClientOnly from "@/components/client-only";
 import { motion } from "framer-motion";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { CalculatorProvider, useCalculator } from "@/context/CalculatorProvider";
+import { CalculatorProvider } from "@/context/CalculatorProvider";
 import { CalculatorDialog } from "./calculator";
 import { AuthGuard } from "./auth-guard";
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { isOpen, isMobile } = useSidebar();
+  const { sidebarState, isMobile } = useSidebar();
 
-  const sidebarWidth = isMobile ? 0 : isOpen ? 256 : 64;
+  const sidebarWidth = {
+      full: 256,
+      compact: 64,
+      hidden: 0,
+  }
+
+  const mainContentMargin = isMobile ? 0 : sidebarWidth[sidebarState];
 
   return (
       <div className="flex min-h-screen w-full overflow-hidden">
@@ -32,7 +38,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
         
         <motion.div
           className="flex flex-col flex-1 h-full overflow-auto"
-          animate={{ marginLeft: sidebarWidth }}
+          animate={{ marginLeft: mainContentMargin }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
         >
           <header className="flex items-center justify-end p-4 sm:hidden">
