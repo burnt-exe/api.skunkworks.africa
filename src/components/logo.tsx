@@ -31,5 +31,10 @@ export const EasyFileLogo: React.FC<EasyFileLogoProps> = (props) => (
             d="M50 40 L40 50 L46 50 L46 60 L54 60 L54 50 L60 50 Z"
           />
       </g>
+
+       {/* Text */}
+      <text x="50" y="90" fontFamily="sans-serif" fontSize="18" fill="#000000" textAnchor="middle" fontWeight="bold">
+        EasyFile
+      </text>
     </svg>
 );
