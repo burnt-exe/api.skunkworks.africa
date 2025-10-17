@@ -4,19 +4,18 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { Logo } from '@/components/logo';
 
 export const dynamic = 'force-dynamic';
 
 export default function LandingPage() {
-  const logoUrl = 'https://raw.githubusercontent.com/burnt-exe/easyfile/1fd577db3831ef09cee1b97adcf33bd0e817e24c/logo.svg';
+  const { isOpen } = useSidebar();
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground px-4 sm:px-6 lg:px-8">
       <header className="fixed top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-transparent">
-        <Link href="/" className="flex items-center gap-2">
-          <Image src={logoUrl} alt="EasyFile Logo" width={32} height={32} className="w-8 h-8" />
-          <h1 className="text-xl font-semibold">EasyFile</h1>
-        </Link>
+        <Logo isCollapsed={isOpen} />
         <SidebarTrigger />
       </header>
 
@@ -25,7 +24,7 @@ export default function LandingPage() {
           <Link href="/invoice" className="inline-block mb-6 md:mb-8">
             <div className="group rounded-full bg-white p-4 md:p-6 shadow-2xl backdrop-blur-md transform transition-transform duration-300 hover:scale-105">
               <Image
-                src={logoUrl}
+                src="/icon.png"
                 alt="EasyFile Logo"
                 width={96}
                 height={96}

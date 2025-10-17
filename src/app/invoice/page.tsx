@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect, useMemo } from 'react';
+import { useState, useTransition, useEffect, useMemo, useRef } from 'react';
 import type { DocumentData, LineItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +18,10 @@ import React from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useFirestore, useUser, addDocumentNonBlocking } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import StorageUploader from '@/components/storage-uploader';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useFirebase } from '@/firebase/provider';
 
 const initialData: DocumentData = {
   title: 'INVOICE',
@@ -50,7 +53,8 @@ export const dynamic = 'force-dynamic';
 export default function InvoicePage() {
   const [data, setData] = useState<DocumentData>(initialData);
   const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const { firestore, storage } = useFirebase();
+  const docPreviewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setData((prev) => ({
@@ -148,6 +152,28 @@ export default function InvoicePage() {
   const vatAmount = useMemo(() => subtotal * ((data.vatRate ?? 0) / 100), [subtotal, data.vatRate]);
   const totalAmount = useMemo(() => subtotal + vatAmount, [subtotal, vatAmount]);
 
+  const generatePdf = async () => {
+    const element = docPreviewRef.current;
+    if (!element) return null;
+
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'px',
+      format: [canvas.width, canvas.height]
+    });
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    return pdf;
+  };
+
+  const handlePrint = async () => {
+    const pdf = await generatePdf();
+    if (pdf) {
+      pdf.autoPrint();
+      window.open(pdf.output('bloburl'), '_blank');
+    }
+  };
 
   const handleSaveInvoice = () => {
     if (!user || !firestore) {
@@ -177,23 +203,28 @@ export default function InvoicePage() {
 
   const handleWordExport = () => {
     startExportTransition(async () => {
-      const dummyPdfDataUri = "data:application/pdf;base64,JVBERi0xLjcK...";
-      const result = await convertPdfToDocxAction({ pdfDataUri: dummyPdfDataUri });
+        const pdf = await generatePdf();
+        if (!pdf) {
+            toast({ title: 'Error', description: 'Could not generate PDF.', variant: 'destructive' });
+            return;
+        }
+        const pdfDataUri = pdf.output('datauristring');
+        const result = await convertPdfToDocxAction({ pdfDataUri });
 
-      if (result.success && result.data?.docxDataUri) {
-        const link = document.createElement('a');
-        link.href = result.data.docxDataUri;
-        link.download = `${data.details.value || 'invoice'}.docx`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
-        toast({
-          title: 'Word Export Failed',
-          description: result.error || 'Unable to generate Word document.',
-          variant: 'destructive',
-        });
-      }
+        if (result.success && result.data?.docxDataUri) {
+            const link = document.createElement('a');
+            link.href = result.data.docxDataUri;
+            link.download = `${data.details.value || 'invoice'}.docx`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            toast({
+                title: 'Word Export Failed',
+                description: result.error || 'Unable to generate Word document.',
+                variant: 'destructive',
+            });
+        }
     });
   };
 
@@ -217,6 +248,32 @@ export default function InvoicePage() {
     });
   };
 
+  const handleSaveToCloud = async () => {
+    if (!user || !storage) {
+        toast({ title: 'Error', description: 'Please log in to save to the cloud.', variant: 'destructive' });
+        return;
+    }
+
+    const pdf = await generatePdf();
+    if (!pdf) {
+        toast({ title: 'Error', description: 'Could not generate PDF.', variant: 'destructive' });
+        return;
+    }
+
+    const pdfBlob = pdf.output('blob');
+    const storagePath = `invoices/${user.uid}/${data.details.value || 'invoice'}.pdf`;
+    const storageRef = ref(storage, storagePath);
+
+    try {
+        await uploadBytes(storageRef, pdfBlob);
+        const downloadURL = await getDownloadURL(storageRef);
+        toast({ title: 'Success', description: 'Invoice saved to cloud!' });
+        // Optionally, you can open the URL or save it to Firestore
+        console.log('File available at', downloadURL);
+    } catch (error) {
+        toast({ title: 'Cloud Save Failed', description: (error as Error).message, variant: 'destructive' });
+    }
+  };
 
   return (
     <div className="grid h-full min-h-[calc(100vh-4rem)] grid-cols-1 gap-8 lg:grid-cols-2">
@@ -226,7 +283,6 @@ export default function InvoicePage() {
           <p className="text-muted-foreground">Fill in the details to generate your invoice.</p>
           <Separator className="my-6" />
           <div className="space-y-6">
-            <StorageUploader />
             <Collapsible asChild>
               <Card>
                 <CollapsibleTrigger className="w-full">
@@ -451,7 +507,7 @@ export default function InvoicePage() {
                     <CardTitle>Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap items-center gap-2">
-                    <Button onClick={() => window.print()}>
+                    <Button onClick={handlePrint}>
                         <Printer className="mr-2"/>
                         Print / PDF
                     </Button>
@@ -465,9 +521,13 @@ export default function InvoicePage() {
                       {isUserLoading ? <LoaderCircle className="animate-spin" /> : <Save className="mr-2" />}
                       Save Invoice
                     </Button>
+                    <Button onClick={handleSaveToCloud} disabled={isUserLoading}>
+                      {isUserLoading ? <LoaderCircle className="animate-spin" /> : <Upload className="mr-2" />}
+                      Save to Cloud
+                    </Button>
                 </CardContent>
             </Card>
-            <DocumentPreview data={data} />
+            <DocumentPreview ref={docPreviewRef} data={data} />
         </div>
       </div>
     </div>
