@@ -5,7 +5,6 @@ import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import {
   Sidebar,
-  SidebarInset,
   SidebarProvider,
   useSidebar,
 } from "@/components/ui/sidebar";
@@ -24,7 +23,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const sidebarWidth = isMobile ? 0 : isOpen ? 256 : 64;
 
   return (
-    <SidebarProvider>
       <div className="flex min-h-screen w-full overflow-hidden">
         <ClientOnly>
           <Sidebar>
@@ -45,8 +43,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
           </main>
         </motion.div>
       </div>
-      <CalculatorDialog />
-    </SidebarProvider>
   )
 }
 
@@ -59,7 +55,10 @@ export default function ClientLayout({
         <FirebaseClientProvider>
           <CalculatorProvider>
             <AuthGuard>
-              <AppContent>{children}</AppContent>
+              <SidebarProvider>
+                <AppContent>{children}</AppContent>
+                <CalculatorDialog />
+              </SidebarProvider>
             </AuthGuard>
             <Toaster />
           </CalculatorProvider>
