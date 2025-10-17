@@ -75,7 +75,7 @@ export function SidebarNav() {
                 isActive={isActive}
                 tooltip={label}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 select-none',
+                  'flex items-center w-full justify-start gap-3 px-3 py-2 rounded-md transition-all duration-200 select-none',
                   'hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D8EFF]',
                   isActive &&
                     'bg-gradient-to-r from-[#1D8EFF]/20 to-[#00B4FF]/20 text-white font-medium shadow-inner'
@@ -106,7 +106,7 @@ export function SidebarNav() {
               onClick={toggleCalculator}
               tooltip="Calculator"
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 select-none',
+                'flex items-center w-full justify-start gap-3 px-3 py-2 rounded-md transition-all duration-200 select-none',
                 'hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D8EFF]'
               )}
             >
