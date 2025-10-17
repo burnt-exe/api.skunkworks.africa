@@ -8,10 +8,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { History, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogContent } from './ui/dialog';
+import { useCalculator } from '@/context/CalculatorProvider';
 
-export const dynamic = 'force-dynamic';
-
-export default function CalculatorPage() {
+export function Calculator() {
   const [currentValue, setCurrentValue] = useState('0');
   const [previousValue, setPreviousValue] = useState<string | null>(null);
   const [operator, setOperator] = useState<string | null>(null);
@@ -80,7 +80,9 @@ export default function CalculatorPage() {
   const chooseOperator = (op: string) => {
       if (previousValue && !overwrite) {
           const result = calculate();
-          setHistory(prev => [...prev, `${previousValue} ${operator} ${currentValue} = ${result}`]);
+          if (result !== 'Error') {
+            setHistory(prev => [...prev, `${previousValue} ${operator} ${currentValue} = ${result}`]);
+          }
           setCurrentValue(result);
           setPreviousValue(result);
       } else {
@@ -93,7 +95,9 @@ export default function CalculatorPage() {
   const equals = () => {
     if (!operator || !previousValue) return;
     const result = calculate();
-    setHistory(prev => [...prev, `${previousValue} ${operator} ${currentValue} = ${result}`]);
+    if (result !== 'Error') {
+      setHistory(prev => [...prev, `${previousValue} ${operator} ${currentValue} = ${result}`]);
+    }
     
     setCurrentValue(result);
     setPreviousValue(null);
@@ -257,4 +261,13 @@ export default function CalculatorPage() {
   );
 }
 
-    
+export function CalculatorDialog() {
+  const { isCalculatorOpen, setCalculatorOpen } = useCalculator();
+  return (
+    <Dialog open={isCalculatorOpen} onOpenChange={setCalculatorOpen}>
+      <DialogContent className="max-w-4xl w-full p-0 border-0 bg-transparent shadow-none">
+        <Calculator />
+      </DialogContent>
+    </Dialog>
+  );
+}

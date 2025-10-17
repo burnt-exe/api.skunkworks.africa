@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logoSrc from '/home/user/studio/src/types/icon.png';
+import { useCalculator } from '@/context/CalculatorProvider';
 
 /**
  * Sidebar navigation for EasyFile Suite.
@@ -32,6 +33,7 @@ import logoSrc from '/home/user/studio/src/types/icon.png';
  */
 export function SidebarNav() {
   const pathname = usePathname();
+  const { toggleCalculator } = useCalculator();
 
   const navItems = useMemo(
     () => [
@@ -44,7 +46,6 @@ export function SidebarNav() {
       { href: '/payslip', label: 'Payslip', icon: Users },
       { href: '/easy-stock-inventory', label: 'EasyStock Inventory', icon: Package },
       { href: '/easy-docu-convert', label: 'EasyDocuConvert', icon: FileCog },
-      { href: '/calculator', label: 'Calculator', icon: Calculator },
     ],
     []
   );
@@ -114,6 +115,24 @@ export function SidebarNav() {
             </SidebarMenuItem>
           );
         })}
+         <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={toggleCalculator}
+              tooltip="Calculator"
+              className={cn(
+                'flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 select-none',
+                'hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D8EFF]'
+              )}
+            >
+              <Calculator
+                aria-hidden="true"
+                className='w-5 h-5 shrink-0 transition-transform duration-200'
+              />
+              <span className="group-data-[collapsible=icon]:hidden">
+                Calculator
+              </span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
       </SidebarMenu>
 
       {/* Footer */}
