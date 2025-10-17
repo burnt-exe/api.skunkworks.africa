@@ -28,8 +28,8 @@ const CollapsibleTrigger = React.forwardRef<
   <CollapsiblePrimitive.Trigger
     ref={ref}
     className={cn(
-      'flex items-center justify-between w-full rounded-md px-3 py-2 text-sm font-medium text-white/80',
-      'hover:text-white hover:bg-white/10 transition-colors duration-200 select-none',
+      'flex items-center justify-between w-full rounded-md px-3 py-2 text-sm font-medium',
+      'hover:bg-accent hover:text-accent-foreground transition-colors duration-200 select-none',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
       className
     )}
