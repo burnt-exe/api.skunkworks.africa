@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -23,7 +24,7 @@ const SidebarContext = React.createContext<SidebarContextType | undefined>(
   undefined
 );
 
-const useSidebar = () => {
+export const useSidebar = () => {
   const context = React.useContext(SidebarContext);
   if (!context) {
     throw new Error('useSidebar must be used within a SidebarProvider');
@@ -64,20 +65,16 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 /*                                   Sidebar                                  */
 /* -------------------------------------------------------------------------- */
 export function Sidebar({ children }: { children: React.ReactNode }) {
-  const { isOpen, isMobile } = useSidebar();
+  const { isMobile } = useSidebar();
   const Comp = isMobile ? MobileSidebar : DesktopSidebar;
-  return (
-    <AnimatePresence mode="wait" initial={false}>
-      {isOpen && <Comp>{children}</Comp>}
-    </AnimatePresence>
-  );
+  return <Comp>{children}</Comp>;
 }
 
 /* -------------------------------------------------------------------------- */
 /*                               Mobile Sidebar                               */
 /* -------------------------------------------------------------------------- */
 function MobileSidebar({ children }: { children: React.ReactNode }) {
-  const { setIsOpen } = useSidebar();
+  const { isOpen, setIsOpen } = useSidebar();
 
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -90,24 +87,28 @@ function MobileSidebar({ children }: { children: React.ReactNode }) {
   }, [setIsOpen]);
 
   return (
-    <motion.div
-      className="fixed inset-0 z-40"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-    >
-      <div className="absolute inset-0 bg-black/50" onClick={() => setIsOpen(false)} />
-      <motion.div
-        className="absolute left-0 top-0 h-full w-[85%] max-w-xs bg-background"
-        initial={{ x: '-100%' }}
-        animate={{ x: '0%' }}
-        exit={{ x: '-100%' }}
-        transition={{ ease: 'easeInOut', duration: 0.3 }}
-      >
-        {children}
-      </motion.div>
-    </motion.div>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 z-40"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="absolute inset-0 bg-black/50" onClick={() => setIsOpen(false)} />
+          <motion.div
+            className="absolute left-0 top-0 h-full w-[85%] max-w-xs bg-background"
+            initial={{ x: '-100%' }}
+            animate={{ x: '0%' }}
+            exit={{ x: '-100%' }}
+            transition={{ ease: 'easeInOut', duration: 0.3 }}
+          >
+            {children}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -118,14 +119,10 @@ function DesktopSidebar({ children }: { children: React.ReactNode }) {
   const { isOpen } = useSidebar();
   return (
     <motion.aside
-      className={cn('h-screen overflow-y-auto overflow-x-hidden group transition-[width] duration-300 ease-in-out')}
-      initial={{ width: isOpen ? 'var(--sidebar-open-width)' : 'var(--sidebar-closed-width)' }}
-      animate={{ width: isOpen ? 'var(--sidebar-open-width)' : 'var(--sidebar-closed-width)' }}
+      className={cn('fixed left-0 top-0 h-screen overflow-y-auto overflow-x-hidden group z-30')}
+      initial={false}
+      animate={{ width: isOpen ? 256 : 64 }}
       transition={{ ease: 'easeInOut', duration: 0.3 }}
-      style={{
-        '--sidebar-open-width': '256px',
-        '--sidebar-closed-width': '64px',
-      } as React.CSSProperties}
       data-collapsible={isOpen ? 'full' : 'icon'}
     >
       {children}
