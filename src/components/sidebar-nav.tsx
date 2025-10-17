@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useMemo } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -22,9 +21,14 @@ import {
   Home,
   Calculator,
   FileCog,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCalculator } from '@/context/CalculatorProvider';
+import { useUser, useAuth } from '@/firebase';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Button } from './ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 /**
  * Sidebar navigation for EasyFile Suite.
@@ -32,7 +36,15 @@ import { useCalculator } from '@/context/CalculatorProvider';
  */
 export function SidebarNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const { toggleCalculator } = useCalculator();
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    router.push('/login');
+  };
 
   const navItems = useMemo(
     () => [
@@ -62,12 +74,7 @@ export function SidebarNav() {
           className="flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D8EFF] rounded-md"
         >
           <div className="relative w-9 h-9">
-            <Image
-              src="/logo.png"
-              alt="EasyFile Logo"
-              width={36}
-              height={36}
-              priority
+            <EasyFileLogo
               className="object-contain drop-shadow-[0_0_6px_rgba(56,152,255,0.6)] group-hover:scale-110 transition-transform duration-300 ease-in-out"
             />
           </div>
@@ -134,12 +141,35 @@ export function SidebarNav() {
           </SidebarMenuItem>
       </SidebarMenu>
 
-      {/* Footer */}
+      {/* User Footer */}
       <footer
-        className="p-4 text-xs text-white/40 border-t border-white/10"
-        aria-label="Application version"
+        className="p-2 border-t border-white/10 group-data-[collapsible=icon]:p-2"
+        aria-label="User account management"
       >
-        EasyFile Suite — <span className="text-white/60">v1.0</span>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                 <Button variant="ghost" className="w-full justify-start h-auto p-2">
+                    <div className="flex items-center gap-3">
+                         <Avatar className="w-8 h-8 border-2 border-primary/50">
+                            <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || 'User'}/>
+                            <AvatarFallback>{user?.email?.[0].toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="text-left group-data-[collapsible=icon]:hidden">
+                            <p className="text-sm font-medium text-white truncate">{user?.displayName || user?.email}</p>
+                            <p className="text-xs text-white/50">View Account</p>
+                        </div>
+                    </div>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="right" align="start" sideOffset={12}>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+                    <LogOut className="mr-2 h-4 w-4"/>
+                    <span>Log out</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
       </footer>
     </nav>
   );

@@ -19,8 +19,8 @@ export const EasyFileLogo: React.FC<EasyFileLogoProps> = (props) => (
     >
       <defs>
         <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style={{ stopColor: '#1D8EFF' }} />
-          <stop offset="100%" style={{ stopColor: '#00B4FF' }} />
+          <stop offset="0%" style={{ stopColor: 'hsl(var(--primary))' }} />
+          <stop offset="100%" style={{ stopColor: 'hsl(var(--primary))', stopOpacity: 0.8 }} />
         </linearGradient>
       </defs>
       {/* Background with rounded corners */}

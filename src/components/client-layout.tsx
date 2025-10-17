@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from "react";
@@ -15,6 +14,7 @@ import { motion } from "framer-motion";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { CalculatorProvider, useCalculator } from "@/context/CalculatorProvider";
 import { CalculatorDialog } from "./calculator";
+import { AuthGuard } from "./auth-guard";
 
 function AppContent({ children }: { children: React.ReactNode }) {
   return (
@@ -55,7 +55,9 @@ export default function ClientLayout({
     return (
         <FirebaseClientProvider>
           <CalculatorProvider>
-            <AppContent>{children}</AppContent>
+            <AuthGuard>
+              <AppContent>{children}</AppContent>
+            </AuthGuard>
             <Toaster />
           </CalculatorProvider>
         </FirebaseClientProvider>
