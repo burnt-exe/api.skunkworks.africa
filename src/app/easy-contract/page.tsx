@@ -221,7 +221,7 @@ export default function EasyContractPage() {
             
             {showFormFields && (
                 <div className="space-y-4 border-t pt-6">
-                    {currentContract_config?.fields.map(field => renderField(field as keyof GenerateContractInput))}
+                    {currentContractConfig?.fields.map(field => renderField(field as keyof GenerateContractInput))}
                 </div>
             )}
 
