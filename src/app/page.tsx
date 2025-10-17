@@ -1,9 +1,11 @@
+
 'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { EasyFileLogo } from '@/components/logo';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +14,7 @@ export default function LandingPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground px-4 sm:px-6 lg:px-8">
       <header className="fixed top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-transparent">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.png" alt="EasyFile Logo" width={32} height={32} style={{ height: 'auto' }} />
+          <EasyFileLogo className="w-8 h-8" />
           <h1 className="text-xl font-semibold">EasyFile</h1>
         </Link>
         <SidebarTrigger />
@@ -22,14 +24,10 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto">
           <Link href="/invoice" className="inline-block mb-6 md:mb-8">
             <div className="group rounded-full bg-primary/10 p-4 md:p-6 shadow-2xl backdrop-blur-md transform transition-transform duration-300 hover:scale-105">
-              <Image
-                src="/logo.png"
-                alt="EasyFile Logo"
+              <EasyFileLogo
                 width={96}
                 height={96}
-                priority
-                className="transition-transform duration-300 group-hover:scale-110"
-                style={{ height: 'auto' }}
+                className="transition-transform duration-300 group-hover:scale-110 text-primary"
               />
             </div>
           </Link>
