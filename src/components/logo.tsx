@@ -18,19 +18,27 @@ export const EasyFileLogo: React.FC<EasyFileLogoProps> = (props) => (
       {...props}
     >
       <defs>
-        <style>
-          {`.folder-fill { fill: #3b82f6; } .arrow-fill { fill: #3b82f6; } .folder-icon-fill { fill: #000000; }`}
-        </style>
+        <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style={{ stopColor: '#1D8EFF' }} />
+          <stop offset="100%" style={{ stopColor: '#00B4FF' }} />
+        </linearGradient>
       </defs>
-      <rect width="100" height="100" rx="20" className="folder-fill" />
+      {/* Background with rounded corners */}
+      <rect width="100" height="100" rx="20" fill="url(#logo-gradient)" />
+      
+      {/* Folder shape */}
       <path
-        className="folder-icon-fill"
-        d="M20,25 h25 l5,-5 h30 a5,5 0 0,1 5,5 v40 a5,5 0 0,1 -5,5 h-60 a5,5 0 0,1 -5,-5 v-30 a5,5 0 0,1 5,-5 z"
+        fill="#FFFFFF"
+        d="M20,30 a5,5 0 0,0 -5,5 v30 a5,5 0 0,0 5,5 h60 a5,5 0 0,0 5,-5 v-30 a5,5 0 0,0 -5,-5 h-30 l-5,-5 h-25 a5,5 0 0,0 -5,5 z"
+        transform="translate(0, 5)"
       />
-      <path
-        className="arrow-fill"
-        d="M50,35 l-10,10 h5 v10 h10 v-10 h5 z"
-      />
-      <text x="50" y="85" textAnchor="middle" fontSize="14" fill="#000000" fontWeight="bold">EasyFile</text>
+      
+      {/* Upload Arrow */}
+      <g transform="translate(0, -5)">
+        <path
+          fill="#FFFFFF"
+          d="M50 35 L60 45 L52 45 L52 55 L48 55 L48 45 L40 45 Z"
+        />
+      </g>
     </svg>
 );
