@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -138,20 +137,15 @@ function DesktopSidebar({ children }: { children: React.ReactNode }) {
   
   const sidebarVariants = {
     full: {
-      width: 'auto',
-      minWidth: '200px',
-      maxWidth: '256px',
+      width: '256px',
       transition: { ease: 'easeInOut', duration: 0.3 },
     },
     compact: {
       width: '64px',
-      minWidth: '64px',
       transition: { ease: 'easeInOut', duration: 0.3 },
     },
     hidden: {
       width: '0px',
-      minWidth: '0px',
-      overflow: 'hidden',
       transition: { ease: 'easeInOut', duration: 0.3 },
     },
   };
@@ -256,7 +250,7 @@ export const SidebarMenuButton = React.forwardRef<
       variant="ghost"
       className={cn(
         'w-full h-auto',
-        'group-data-[collapsible=full]:justify-start group-data-[collapsible=full]:px-3 group-data-[collapsible=full]:py-2 group-data-[collapsible=full]:gap-3',
+        'group-data-[collapsible=full]:justify-start group-data-[collapsible=full]:px-3 group-data-[collapsible=full]:py-2',
         'group-data-[collapsible=compact]:p-3 group-data-[collapsible=compact]:justify-center',
         isActive && 'bg-accent text-accent-foreground',
         props.className

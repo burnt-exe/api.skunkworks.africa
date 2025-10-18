@@ -34,7 +34,7 @@ import { Logo } from './logo';
 export function SidebarNav() {
   const pathname = usePathname();
   const { toggleCalculator } = useCalculator();
-  const { isIconMode } = useSidebar();
+  const { isIconMode, sidebarState } = useSidebar();
 
   const navItems = useMemo(
     () => [
@@ -52,15 +52,20 @@ export function SidebarNav() {
     []
   );
 
+  const isHidden = sidebarState === 'hidden';
+
   return (
     <div
-      className="flex flex-col h-full bg-background text-foreground/90 border-r border-border/10"
+      className={cn(
+        "flex flex-col h-full bg-background text-foreground/90 border-r border-border/10",
+        isHidden && "w-0"
+      )}
       role="navigation"
       aria-label="Primary Sidebar"
     >
       {/* Header */}
       <SidebarHeader>
-        <Logo isCollapsed={isIconMode} />
+        <Logo isCollapsed={isIconMode || isHidden} />
       </SidebarHeader>
 
       {/* Navigation Items */}
@@ -83,7 +88,7 @@ export function SidebarNav() {
                 <Link
                   href={href}
                   aria-current={isActive ? 'page' : undefined}
-                  className="flex items-center"
+                  className="flex items-center gap-3"
                 >
                   <Icon
                     aria-hidden="true"
@@ -92,7 +97,7 @@ export function SidebarNav() {
                       isActive && 'scale-110 text-primary'
                     )}
                   />
-                  <span className={cn('ml-3 whitespace-nowrap transition-opacity duration-200', isIconMode ? 'opacity-0 w-0' : 'opacity-100 w-auto')}>
+                  <span className={cn('whitespace-nowrap transition-opacity duration-200', (isIconMode || isHidden) ? 'opacity-0 w-0' : 'opacity-100')}>
                     {label}
                   </span>
                 </Link>
@@ -109,12 +114,12 @@ export function SidebarNav() {
                 'hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
               )}
             >
-              <div className="flex items-center">
+              <div className="flex items-center gap-3">
                 <Calculator
                   aria-hidden="true"
                   className='w-5 h-5 shrink-0 transition-transform duration-200'
                 />
-                <span className={cn('ml-3 whitespace-nowrap transition-opacity duration-200', isIconMode ? 'opacity-0 w-0' : 'opacity-100 w-auto')}>
+                <span className={cn('whitespace-nowrap transition-opacity duration-200', (isIconMode || isHidden) ? 'opacity-0 w-0' : 'opacity-100')}>
                   Calculator
                 </span>
               </div>
@@ -126,11 +131,11 @@ export function SidebarNav() {
       <footer
         className={cn(
           "px-4 py-3 text-xs text-muted-foreground border-t border-border/10 mt-auto transition-all duration-300",
-          isIconMode && "px-2 text-center"
+          (isIconMode || isHidden) && "px-2 text-center"
         )}
         aria-label="Application version"
       >
-        <span className={cn(isIconMode && "hidden")}>EasyFile Suite — </span>
+        <span className={cn((isIconMode || isHidden) && "hidden")}>EasyFile Suite — </span>
         <span className="text-foreground/60">v1.0</span>
       </footer>
     </div>
