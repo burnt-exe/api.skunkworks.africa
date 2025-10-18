@@ -1,9 +1,7 @@
-runtime: nodejs
 env:
-  - secret: FIREBASE_CONFIG
-  - key: GOOGLE_APPLICATION_CREDENTIALS
-    value: "/workspace/serviceAccountKey.json"
-build:
-  run: npm install -g pnpm && pnpm install && pnpm build
-start:
-  run: pnpm start
+  - variable: FIREBASE_CONFIG
+    secret: FIREBASE_CONFIG
+    availability:
+      - BUILD
+      - RUNTIME
+
